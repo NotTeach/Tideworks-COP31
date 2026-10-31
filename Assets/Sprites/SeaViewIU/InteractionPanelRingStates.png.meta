@@ -1,0 +1,520 @@
+fileFormatVersion: 2
+guid: 7fc81a3071f20fd4098c524846126889
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -878574085293667346
+    second: InteractionPanelRingStates_0
+  - first:
+      213: 3473226604561847904
+    second: InteractionPanelRingStates_1
+  - first:
+      213: 3110280560760326914
+    second: InteractionPanelRingStates_2
+  - first:
+      213: -4492968686266152900
+    second: InteractionPanelRingStates_3
+  - first:
+      213: -7929237443407067837
+    second: InteractionPanelRingStates_4
+  - first:
+      213: -1785309450399011589
+    second: InteractionPanelRingStates_5
+  - first:
+      213: -4158419415158090583
+    second: InteractionPanelRingStates_6
+  - first:
+      213: -8025388652602688742
+    second: InteractionPanelRingStates_7
+  - first:
+      213: 6636111016013704292
+    second: InteractionPanelRingStates_8
+  - first:
+      213: 1919851091863951754
+    second: InteractionPanelRingStates_9
+  - first:
+      213: 2098221076732664524
+    second: InteractionPanelRingStates_10
+  - first:
+      213: -5454845916328722673
+    second: InteractionPanelRingStates_11
+  - first:
+      213: 8144095349008799933
+    second: InteractionPanelRingStates_12
+  - first:
+      213: 3810739270215455883
+    second: InteractionPanelRingStates_13
+  - first:
+      213: 191643386514090272
+    second: InteractionPanelRingStates_14
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: InteractionPanelRingStates_0
+      rect:
+        serializedVersion: 2
+        x: 124
+        y: 70
+        width: 31
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: eeb0539368daec3f0800000000000000
+      internalID: -878574085293667346
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: InteractionPanelRingStates_1
+      rect:
+        serializedVersion: 2
+        x: 212
+        y: 63
+        width: 44
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0665855e131633030800000000000000
+      internalID: 3473226604561847904
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: InteractionPanelRingStates_2
+      rect:
+        serializedVersion: 2
+        x: 300
+        y: 52
+        width: 53
+        height: 36
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 20b0ce7e0bfe92b20800000000000000
+      internalID: 3110280560760326914
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: InteractionPanelRingStates_3
+      rect:
+        serializedVersion: 2
+        x: 388
+        y: 36
+        width: 56
+        height: 52
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c38072cd8c4c5a1c0800000000000000
+      internalID: -4492968686266152900
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: InteractionPanelRingStates_4
+      rect:
+        serializedVersion: 2
+        x: 476
+        y: 21
+        width: 53
+        height: 67
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 345cefd5e80b5f190800000000000000
+      internalID: -7929237443407067837
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: InteractionPanelRingStates_5
+      rect:
+        serializedVersion: 2
+        x: 564
+        y: 8
+        width: 52
+        height: 80
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bfca1da838e4937e0800000000000000
+      internalID: -1785309450399011589
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: InteractionPanelRingStates_6
+      rect:
+        serializedVersion: 2
+        x: 652
+        y: 0
+        width: 52
+        height: 88
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9a41a6cf2935a46c0800000000000000
+      internalID: -4158419415158090583
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: InteractionPanelRingStates_7
+      rect:
+        serializedVersion: 2
+        x: 740
+        y: 0
+        width: 52
+        height: 88
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a1b7a217a8710a090800000000000000
+      internalID: -8025388652602688742
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: InteractionPanelRingStates_8
+      rect:
+        serializedVersion: 2
+        x: 813
+        y: 0
+        width: 67
+        height: 88
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 46cad873fc3381c50800000000000000
+      internalID: 6636111016013704292
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: InteractionPanelRingStates_9
+      rect:
+        serializedVersion: 2
+        x: 888
+        y: 0
+        width: 80
+        height: 88
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a895230756ea4aa10800000000000000
+      internalID: 1919851091863951754
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: InteractionPanelRingStates_10
+      rect:
+        serializedVersion: 2
+        x: 967
+        y: 0
+        width: 177
+        height: 88
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cca53e2d3f06e1d10800000000000000
+      internalID: 2098221076732664524
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: InteractionPanelRingStates_11
+      rect:
+        serializedVersion: 2
+        x: 1143
+        y: 0
+        width: 89
+        height: 88
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f0f7cb44a8e7c44b0800000000000000
+      internalID: -5454845916328722673
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: InteractionPanelRingStates_12
+      rect:
+        serializedVersion: 2
+        x: 1232
+        y: 0
+        width: 88
+        height: 88
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: db894961293a50170800000000000000
+      internalID: 8144095349008799933
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: InteractionPanelRingStates_13
+      rect:
+        serializedVersion: 2
+        x: 1320
+        y: 0
+        width: 88
+        height: 88
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b84d2d41d2772e430800000000000000
+      internalID: 3810739270215455883
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: InteractionPanelRingStates_14
+      rect:
+        serializedVersion: 2
+        x: 1408
+        y: 0
+        width: 88
+        height: 88
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 029a9b805aad8a200800000000000000
+      internalID: 191643386514090272
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      InteractionPanelRingStates_0: -878574085293667346
+      InteractionPanelRingStates_1: 3473226604561847904
+      InteractionPanelRingStates_10: 2098221076732664524
+      InteractionPanelRingStates_11: -5454845916328722673
+      InteractionPanelRingStates_12: 8144095349008799933
+      InteractionPanelRingStates_13: 3810739270215455883
+      InteractionPanelRingStates_14: 191643386514090272
+      InteractionPanelRingStates_2: 3110280560760326914
+      InteractionPanelRingStates_3: -4492968686266152900
+      InteractionPanelRingStates_4: -7929237443407067837
+      InteractionPanelRingStates_5: -1785309450399011589
+      InteractionPanelRingStates_6: -4158419415158090583
+      InteractionPanelRingStates_7: -8025388652602688742
+      InteractionPanelRingStates_8: 6636111016013704292
+      InteractionPanelRingStates_9: 1919851091863951754
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
