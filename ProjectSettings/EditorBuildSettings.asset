@@ -18,6 +18,9 @@ EditorBuildSettings:
     path: Assets/Scenes/Fishing.unity
     guid: 779582563a2abb040b2bfdef555d7da2
   - enabled: 1
+    path: Assets/Scenes/Beach.unity
+    guid: 687e9948f0cdbb343a556dd1672ce1af
+  - enabled: 1
     path: Assets/Scenes/SampleScene.unity
     guid: 8c9cfa26abfee488c85f1582747f6a02
   m_configObjects:

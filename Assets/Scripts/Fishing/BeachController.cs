@@ -15,6 +15,9 @@ using UnityEngine.UI;
 public class BeachController : MonoBehaviour
 {
     [SerializeField] string menuSceneName = "MainMenu";
+    [Tooltip("\"Start Day 2\" yeni gunu bu sahnede baslatir")]
+    [SerializeField] string nextDaySceneName = "Fishing";
+    [SerializeField] CanvasGroup screenFader;
     [SerializeField] int reward = 5;
 
     [Header("Lambalar")]
@@ -81,11 +84,38 @@ public class BeachController : MonoBehaviour
         hole.onClick.AddListener(FillHole);
     }
 
-    /// <summary>Ayristirmadan sonra cagrilir.</summary>
-    public void Begin()
+    void Start()
     {
+        Time.timeScale = 1f;
+        foreach (var button in GetComponentsInChildren<Button>(true))
+            if (!button.GetComponent<TwButonSesi>())
+                button.gameObject.AddComponent<TwButonSesi>();
         ResetBeach();
+        TwSes.EkranGecisi(Ses.MuzikAnaTema, Ses.AmbiyansDeniz, null);
+        if (screenFader) StartCoroutine(FadeIn());
     }
+
+    IEnumerator FadeIn()
+    {
+        screenFader.gameObject.SetActive(true);
+        yield return Tween(0.45f, t => screenFader.alpha = 1f - Mathf.SmoothStep(0f, 1f, t));
+        screenFader.gameObject.SetActive(false);
+    }
+
+    IEnumerator FadeOutAndLoad(string scene)
+    {
+        GameSettings.Save();
+        if (screenFader)
+        {
+            screenFader.gameObject.SetActive(true);
+            screenFader.blocksRaycasts = true;
+            yield return Tween(0.45f, t => screenFader.alpha = Mathf.SmoothStep(0f, 1f, t));
+        }
+        SceneManager.LoadScene(scene);
+    }
+
+    /// <summary>Ust bardaki menu butonu.</summary>
+    public void BackToMenu() => StartCoroutine(FadeOutAndLoad(menuSceneName));
 
     public void Restart()
     {
@@ -306,14 +336,14 @@ public class BeachController : MonoBehaviour
     {
         bool last = GameProgress.CurrentDay >= GameProgress.TotalDays;
         GameProgress.CompleteDay();
-        SceneManager.LoadScene(last ? menuSceneName : SceneManager.GetActiveScene().name);
+        StartCoroutine(FadeOutAndLoad(last ? menuSceneName : nextDaySceneName));
     }
 
     /// <summary>"Season map": sezon haritasi henuz yok, gun biter ve ana menuye donulur.</summary>
     public void SeasonMap()
     {
         GameProgress.CompleteDay();
-        SceneManager.LoadScene(menuSceneName);
+        StartCoroutine(FadeOutAndLoad(menuSceneName));
     }
 
     // ---------------- Yardimcilar ----------------
