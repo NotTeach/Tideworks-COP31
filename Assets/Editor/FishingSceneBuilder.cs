@@ -21,13 +21,14 @@ using static MainMenuSceneBuilder;
 [InitializeOnLoad]
 public static class FishingSceneBuilder
 {
-    const int BuilderVersion = 3;
+    const int BuilderVersion = 5;
     const string ScenePath = "Assets/Scenes/Fishing.unity";
     const string ArtDir = "Assets/Art/Fishing/";
     const string UiDir = "Assets/Sprites/Fishing/";
+    const string BeachDir = "Assets/Sprites/Beach/";
     const string CoinPath = "Assets/Sprites/Workshop/";
     const string FontDir = "Assets/Fonts/";
-    const string AutoBuildKey = "Tideworks.FishingAutoBuild.v3";
+    const string AutoBuildKey = "Tideworks.FishingAutoBuild.v5";
     static string VersionKey => "Tideworks.FishingBuilderVersion." + PlayerSettings.productGUID;
 
     static readonly Vector2 Art = new Vector2(2560, 1440);
@@ -62,6 +63,7 @@ public static class FishingSceneBuilder
 
         ConfigureSprites(ArtDir);
         ConfigureSprites(UiDir);
+        ConfigureSprites(BeachDir);
         var legacy = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         fontBody = AssetDatabase.LoadAssetAtPath<Font>(FontDir + "Nunito-Bold.ttf") ?? legacy;
         fontHeavy = AssetDatabase.LoadAssetAtPath<Font>(FontDir + "Nunito-ExtraBold.ttf") ?? legacy;
@@ -317,9 +319,152 @@ public static class FishingSceneBuilder
             new Color32(110, 62, 40, 255), new Rect(80, 380, 940, 150), TextAnchor.MiddleCenter);
         thanks.horizontalOverflow = HorizontalWrapMode.Wrap;
         var done = Img(card.transform, "Done", UiDir, "FinishButton", new Rect(290, 580, 520, 124));
-        Label(done.transform, "Text", "Back to menu", fontTitle, 50, Color.white, new Rect(0, -6, 520, 124), TextAnchor.MiddleCenter);
+        Label(done.transform, "Text", "Continue", fontTitle, 50, Color.white, new Rect(0, -6, 520, 124), TextAnchor.MiddleCenter);
         Clickable(done, sorter.Done);
         finish.gameObject.SetActive(false);
+
+        // ================= Gorev 3: carettalara yardim =================
+        var beachPage = Page(canvasGo.transform, "BeachPage", "Beach", out var beach, BeachDir);
+        var beachCtl = beachPage.gameObject.AddComponent<BeachController>();
+        float[] lampX = { 429, 1261, 2439 };
+        var pools = new Image[3];
+        for (int i = 0; i < 3; i++)
+            pools[i] = Img(beach, "LightPool" + i, BeachDir, "LightPool", new Rect(lampX[i] + 40 - 280, 1160 - 110, 560, 220));
+
+        var chair = BeachButton(beach, "Chair", new Rect(880 - 120, 830 - 85, 240, 170));
+        var umbrella = BeachButton(beach, "Umbrella", new Rect(2162 - 120, 760 - 120, 240, 240));
+        var holeFilled = Img(beach, "HoleFilled", BeachDir, "HoleFilled", new Rect(1503 - 130, 890 - 75, 260, 150));
+        var hole = BeachButton(beach, "Hole", new Rect(1503 - 130, 890 - 75, 260, 150));
+        Vector2[] nestPos = { new Vector2(873, 1074), new Vector2(1514, 1136), new Vector2(2148, 1046) };
+        var nests = new Button[3];
+        var cages = new RectTransform[3];
+        for (int i = 0; i < 3; i++)
+        {
+            nests[i] = BeachButton(beach, "Nest" + i, new Rect(nestPos[i].x - 110, nestPos[i].y - 55, 220, 110));
+            cages[i] = Img(beach, "Cage" + i, BeachDir, "Cage", new Rect(nestPos[i].x - 120, nestPos[i].y - 36 - 105, 240, 210)).rectTransform;
+        }
+        var hatchling = Img(beach, "HatchlingTemplate", BeachDir, "Hatchling", new Rect(0, 0, 64, 72));
+        var lamps = new Button[3];
+        var bulbs = new Image[3];
+        var glows = new Image[3];
+        for (int i = 0; i < 3; i++)
+        {
+            glows[i] = Img(beach, "LampGlow" + i, BeachDir, "LampGlow", new Rect(lampX[i] + 68 - 150, 1140 - 150, 300, 300));
+            lamps[i] = BeachButton(beach, "Lamp" + i, new Rect(lampX[i] - 110, 1070, 220, 360));
+            bulbs[i] = Img(lamps[i].transform, "Bulb", BeachDir, "LampBulb", new Rect(0, 0, 220, 360));
+        }
+
+        // Lambalar sondukce kumsal kararir (ust bar ve gorev karti aydinlik kalir)
+        var dark = MakeImage(beach, "Darkness", null);
+        dark.color = new Color(0.04f, 0.06f, 0.16f, 0f);
+        Place(dark.rectTransform, new Rect(0, 0, Art.x, Art.y));
+
+        var bMenu = Img(beach, "MenuButton", UiDir, "HudTeal", new Rect(40, 40, 110, 110));
+        Img(bMenu.transform, "Icon", UiDir, "IconWaves", new Rect(23, 23, 64, 64));
+        Clickable(bMenu, c.BackToMenu);
+        var bRestart = Img(beach, "RestartButton", UiDir, "RestartButton", new Rect(174, 45, 260, 100));
+        Label(bRestart.transform, "Text", "Restart", fontHeavy, 38, Ink, new Rect(0, -2, 260, 100), TextAnchor.MiddleCenter);
+        Clickable(bRestart, beachCtl.Restart);
+        var bCoins = Img(beach, "Coins", UiDir, "HudDark220", new Rect(456, 45, 230, 100));
+        Img(bCoins.transform, "Coin", CoinPath, "Coin", new Rect(22, 20, 60, 60));
+        var bCoinText = Label(bCoins.transform, "Count", "0", fontTitle, 48, Color.white, new Rect(96, 2, 130, 100));
+
+        var bTip = Img(beach, "Tooltip", BeachDir, "BeachTooltip", new Rect(720, 40, 1070, 128));
+        Img(bTip.transform, "Icon", BeachDir, "Hatchling", new Rect(34, 28, 64, 72));
+        var bTipText = Label(bTip.transform, "Text", "", fontHeavy, 30, Ink, new Rect(124, 8, 920, 112));
+        bTipText.horizontalOverflow = HorizontalWrapMode.Wrap;
+        bTipText.resizeTextForBestFit = true;
+        bTipText.resizeTextMaxSize = 30;
+        bTipText.resizeTextMinSize = 20;
+
+        var taskCard = Img(beach, "TaskCard", BeachDir, "TaskFrame", new Rect(1866, 40, 650, 580));
+        Label(taskCard.transform, "Title", "TASK 3 · HELP THE CARETTAS", fontHeavy, 24, new Color32(30, 120, 124, 255), new Rect(44, 34, 560, 34));
+        Label(taskCard.transform, "Subtitle", "Tonight the nests hatch!", fontHand, 56, Ink, new Rect(44, 66, 560, 72));
+        string[] taskTitles = { "Switch off the lights", "Clear the path", "Protect the nests" };
+        string[] taskSubs = { "Hatchlings follow the brightest light.", "Move chairs, fill holes.", "A cage over every nest." };
+        var checks = new Image[3];
+        var counts = new Text[3];
+        for (int i = 0; i < 3; i++)
+        {
+            float y = 160 + i * 132;
+            checks[i] = Img(taskCard.transform, "Check" + i, BeachDir, "CheckOff", new Rect(44, y + 8, 52, 52));
+            var tt = Label(taskCard.transform, "TaskTitle" + i, taskTitles[i], fontTitle, 36, Ink, new Rect(114, y - 4, 400, 52));
+            tt.resizeTextForBestFit = true;
+            tt.resizeTextMaxSize = 36;
+            tt.resizeTextMinSize = 22;
+            tt.horizontalOverflow = HorizontalWrapMode.Wrap;
+            var sub = Label(taskCard.transform, "TaskSub" + i, taskSubs[i], fontBody, 24, new Color32(170, 96, 52, 255), new Rect(114, y + 46, 400, 60), TextAnchor.UpperLeft);
+            sub.horizontalOverflow = HorizontalWrapMode.Wrap;
+            counts[i] = Label(taskCard.transform, "Count" + i, "0/3", fontTitle, 36, Ink, new Rect(516, y + 4, 92, 56), TextAnchor.MiddleRight);
+        }
+
+        var hatchImg = Img(beach, "HatchButton", UiDir, "GoButton", new Rect(1050, 660, 460, 124));
+        Label(hatchImg.transform, "Text", "Let them hatch!", fontTitle, 50, Color.white, new Rect(0, -6, 460, 124), TextAnchor.MiddleCenter);
+        Clickable(hatchImg, beachCtl.Hatch);
+
+        // Gun sonu karti
+        var complete = MakeImage(beach, "CompleteOverlay", null);
+        complete.color = new Color(0.02f, 0.08f, 0.1f, 0.55f);
+        complete.raycastTarget = true;
+        Place(complete.rectTransform, new Rect(-400, -400, Art.x + 800, Art.y + 800));
+        var cCard = Img(complete.transform, "Card", BeachDir, "DayCard", new Rect(400 + 680, 400 + 170, 1200, 1070));
+        var ct = cCard.transform;
+        var kicker = Label(ct, "Kicker", "", fontHeavy, 26, new Color32(30, 120, 124, 255), new Rect(0, 46, 1200, 44), TextAnchor.MiddleCenter);
+        var title = Label(ct, "Title", "", fontTitle, 76, Ink, new Rect(70, 92, 1060, 190), TextAnchor.MiddleCenter);
+        title.horizontalOverflow = HorizontalWrapMode.Wrap;
+        title.lineSpacing = 0.82f;
+        title.resizeTextForBestFit = true;
+        title.resizeTextMaxSize = 76;
+        title.resizeTextMinSize = 44;
+        Text Stat(string name, string sprite, float x, string label, Color labelInk, Color valueInk)
+        {
+            var box = Img(ct, name, BeachDir, sprite, new Rect(x, 300, 344, 142));
+            Label(box.transform, "Label", label, fontHeavy, 22, labelInk, new Rect(0, 18, 344, 36), TextAnchor.MiddleCenter);
+            return Label(box.transform, "Value", "", fontTitle, 50, valueInk, new Rect(0, 56, 344, 72), TextAnchor.MiddleCenter);
+        }
+        var nestsSafe = Stat("NestsSafe", "StatBox", 67, "NESTS SAFE", Brown, Ink);
+        var beachReady = Stat("BeachReady", "StatBox", 428, "BEACH READY", Brown, Ink);
+        var earnedText = Stat("Earned", "StatBoxDark", 789, "EARNED", SoftTeal, Gold);
+        var radio = Img(ct, "Radio", BeachDir, "RadioBox", new Rect(67, 468, 1068, 243));
+        Img(radio.transform, "Hatice", BeachDir, "HaticePortrait", new Rect(30, 52, 140, 140));
+        var radioText = Label(radio.transform, "Text",
+            "<b>On Hatice Teyze's radio tonight:</b> \u201cNeighbours, switch off your lights by the shore! The turtles are coming!\u201d " +
+            "The whole town of Ka\u015f went dark, and the hatchlings found their way to the waves.",
+            fontBody, 32, new Color32(48, 43, 40, 255), new Rect(196, 20, 846, 203));
+        radioText.horizontalOverflow = HorizontalWrapMode.Wrap;
+        radioText.lineSpacing = 1.05f;
+        radioText.resizeTextForBestFit = true;
+        radioText.resizeTextMaxSize = 32;
+        radioText.resizeTextMinSize = 22;
+        var waiting = Label(ct, "Waiting", "", fontHand, 52, new Color32(110, 62, 40, 255), new Rect(90, 726, 1020, 140), TextAnchor.MiddleCenter);
+        waiting.horizontalOverflow = HorizontalWrapMode.Wrap;
+        waiting.lineSpacing = 0.9f;
+        var next = Img(ct, "NextDay", BeachDir, "DayButton", new Rect(256, 884, 400, 122));
+        var nextLabel = Label(next.transform, "Text", "", fontTitle, 46, Color.white, new Rect(0, -6, 344, 122), TextAnchor.MiddleCenter);
+        Img(next.transform, "Arrow", CoinPath, "ArrowWhite", new Rect(330, 40, 48, 30));
+        Clickable(next, beachCtl.StartNextDay);
+        var map = Img(ct, "SeasonMap", BeachDir, "MapButton", new Rect(676, 884, 280, 122));
+        Label(map.transform, "Text", "Season map", fontHeavy, 36, Ink, new Rect(0, -2, 280, 122), TextAnchor.MiddleCenter);
+        Clickable(map, beachCtl.SeasonMap);
+
+        SetRefs(beachCtl, ("darkness", dark), ("chair", chair), ("umbrella", umbrella), ("hole", hole),
+            ("holeFilled", holeFilled.gameObject), ("hatchlingTemplate", hatchling), ("tooltip", bTipText),
+            ("checkOn", LoadSprite("CheckOn", BeachDir)), ("checkOff", LoadSprite("CheckOff", BeachDir)),
+            ("coinText", bCoinText), ("hatchButton", hatchImg.gameObject), ("completeOverlay", complete.gameObject),
+            ("completeCard", cCard.rectTransform), ("completeKicker", kicker), ("completeTitle", title),
+            ("nestsSafeText", nestsSafe), ("beachReadyText", beachReady), ("earnedText", earnedText),
+            ("waitingText", waiting), ("nextDayLabel", nextLabel));
+        SetArray(beachCtl, "lamps", lamps);
+        SetArray(beachCtl, "lampBulbs", bulbs);
+        SetArray(beachCtl, "lampGlows", glows);
+        SetArray(beachCtl, "lightPools", pools);
+        SetArray(beachCtl, "nests", nests);
+        SetArray(beachCtl, "cages", cages);
+        SetArray(beachCtl, "taskChecks", checks);
+        SetArray(beachCtl, "taskCounts", counts);
+        SetRefs(c, ("beachPage", beachPage), ("beach", beachCtl));
+        SetRefs(sorter, ("host", c));
+        beachPage.gameObject.SetActive(false);
 
         // ================= Ekran gecisi =================
         var faderImg = MakeImage(canvasGo.transform, "ScreenFader", null);
@@ -409,12 +554,12 @@ public static class FishingSceneBuilder
     }
 
     /// <summary>Sayfa: bulanik dolgu (Cover) + 2560x1440 artboard (Contain) + zemin gorseli.</summary>
-    static CanvasGroup Page(Transform parent, string name, string art, out Transform artboard)
+    static CanvasGroup Page(Transform parent, string name, string art, out Transform artboard, string dir = UiDir)
     {
         var go = new GameObject(name, typeof(RectTransform), typeof(CanvasGroup));
         go.transform.SetParent(parent, false);
         Stretch((RectTransform)go.transform);
-        var backdrop = MakeImage(go.transform, "Backdrop", LoadSprite(art + "Backdrop", UiDir));
+        var backdrop = MakeImage(go.transform, "Backdrop", LoadSprite(art + "Backdrop", dir));
         var fit = backdrop.gameObject.AddComponent<ArtboardFitter>();
         fit.artSize = Art;
         fit.mode = ArtboardFitter.FitMode.Cover;
@@ -423,9 +568,20 @@ public static class FishingSceneBuilder
         board.SetParent(go.transform, false);
         board.GetComponent<ArtboardFitter>().artSize = Art;
         board.sizeDelta = Art;
-        Img(board, "Background", UiDir, art + "Background", new Rect(0, 0, Art.x, Art.y));
+        Img(board, "Background", dir, art + "Background", new Rect(0, 0, Art.x, Art.y));
         artboard = board;
         return go.GetComponent<CanvasGroup>();
+    }
+
+    /// <summary>Kumsalda tiklanabilir nesne (lamba, sezlong, yuva...): renk tonu yok, dinleyiciyi controller ekler.</summary>
+    static Button BeachButton(Transform parent, string name, Rect r)
+    {
+        var img = Img(parent, name, BeachDir, name.TrimEnd('0', '1', '2'), r);
+        img.raycastTarget = true;
+        var b = img.gameObject.AddComponent<Button>();
+        b.transition = Selectable.Transition.None;
+        img.gameObject.AddComponent<MenuButtonFx>().hoverScale = 1.05f;
+        return b;
     }
 
     static Image Img(Transform parent, string name, string dir, string sprite, Rect r)

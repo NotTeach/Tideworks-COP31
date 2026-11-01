@@ -8,11 +8,12 @@ using UnityEngine.UI;
 
 /// <summary>
 /// Gorev 2 - Toplananlari ayir: her cop dogru kutuya atilir. Dogru +3 altin, yanlis -2 altin.
-/// Yanlista esya yine de dogru kutuya gider (oyuncu dogrusunu gorur). Hepsi bitince sonuc karti.
+/// Yanlista esya yine de dogru kutuya gider (oyuncu dogrusunu gorur). Hepsi bitince sonuc karti, ardindan kumsal.
 /// </summary>
 public class SortController : MonoBehaviour
 {
     [SerializeField] string menuSceneName = "MainMenu";
+    [SerializeField] FishingController host;
     [SerializeField] int rightCoins = 3;
     [SerializeField] int wrongCoins = 2;
 
@@ -154,11 +155,11 @@ public class SortController : MonoBehaviour
         yield return Tween(0.35f, t => finishCard.localScale = Vector3.one * EaseOutBack(t));
     }
 
-    /// <summary>Sonuc kartindaki buton: gun biter, ana menuye donulur.</summary>
+    /// <summary>Sonuc kartindaki "Continue": Gorev 3 (carettalara yardim) kumsalina gecer.</summary>
     public void Done()
     {
-        GameProgress.CompleteDay();
-        SceneManager.LoadScene(menuSceneName);
+        if (host) host.GoBeach();
+        else SceneManager.LoadScene(menuSceneName);
     }
 
     void RefreshScore()

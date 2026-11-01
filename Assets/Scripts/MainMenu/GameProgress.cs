@@ -24,10 +24,22 @@ public static class GameProgress
         set => PlayerPrefs.SetInt(CoinsKey, Mathf.Max(0, value));
     }
 
+    const string NestsKey = "progress.nestsSafe";
+    /// <summary>Sezon boyunca kumsaldaki yuva sayisi (Intro: "12 nests").</summary>
+    public const int TotalNests = 12;
+
+    /// <summary>Korunup yavrulari denize ulasan yuva sayisi.</summary>
+    public static int NestsSafe
+    {
+        get => Mathf.Clamp(PlayerPrefs.GetInt(NestsKey, 0), 0, TotalNests);
+        set => PlayerPrefs.SetInt(NestsKey, Mathf.Clamp(value, 0, TotalNests));
+    }
+
     public static void NewGame()
     {
         PlayerPrefs.SetInt(DayKey, 1);
         PlayerPrefs.SetInt(CoinsKey, StartCoins);
+        PlayerPrefs.SetInt(NestsKey, 0);
         PlayerPrefs.Save();
     }
 
@@ -41,6 +53,7 @@ public static class GameProgress
     {
         PlayerPrefs.DeleteKey(DayKey);
         PlayerPrefs.DeleteKey(CoinsKey);
+        PlayerPrefs.DeleteKey(NestsKey);
         PlayerPrefs.Save();
     }
 }

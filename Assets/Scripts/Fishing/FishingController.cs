@@ -11,7 +11,7 @@ using UnityEngine.UI;
 /// Gorev 1 - Denizi temizle: tekneyle dolas, oltayla copleri (+5) ve baliklari (+10) topla.
 /// Bilgisayar: yukari/W ileri, asagi/S geri, sol-sag/A-D dumen, E (veya Space) ile olta at, ya da bir esyaya tikla.
 /// Telefon: joystick ile kurek cek, olta butonuyla at. Adalara ve kumsala carpinca tekne geri seker.
-/// Butun copler toplaninca ayristirma (SortController) baslar.
+/// Butun copler toplaninca ayristirma (SortController), ardindan carettalara yardim (BeachController) gelir.
 /// Konumlar artboard pikselidir: x saga, y asagi, sol ust kose (0,0).
 /// </summary>
 public class FishingController : MonoBehaviour
@@ -24,6 +24,8 @@ public class FishingController : MonoBehaviour
     [SerializeField] CanvasGroup sortPage;
     [SerializeField] CanvasGroup screenFader;
     [SerializeField] SortController sort;
+    [SerializeField] CanvasGroup beachPage;
+    [SerializeField] BeachController beach;
 
     [Header("Deniz")]
     [SerializeField] RectTransform boat;
@@ -135,6 +137,7 @@ public class FishingController : MonoBehaviour
         Time.timeScale = 1f;
         seaPage.gameObject.SetActive(true);
         sortPage.gameObject.SetActive(false);
+        beachPage.gameObject.SetActive(false);
         mobileControls.SetActive(IsMobile);
         itemTemplate.gameObject.SetActive(false);
         line.gameObject.SetActive(false);
@@ -655,6 +658,22 @@ public class FishingController : MonoBehaviour
         sortPage.gameObject.SetActive(true);
         sort.Begin(new List<int>(bag), trashSprites);
         TwSes.EkranGecisi(Ses.MuzikTamir, Ses.AmbiyansAtolye, null);
+        if (screenFader) yield return Fade(screenFader, 1f, 0f);
+    }
+
+    /// <summary>Ayristirma bitince: Gorev 3 kumsali.</summary>
+    public void GoBeach()
+    {
+        StartCoroutine(GoBeachRoutine());
+    }
+
+    IEnumerator GoBeachRoutine()
+    {
+        if (screenFader) yield return Fade(screenFader, 0f, 1f, true);
+        sortPage.gameObject.SetActive(false);
+        beachPage.gameObject.SetActive(true);
+        beach.Begin();
+        TwSes.EkranGecisi(Ses.MuzikAnaTema, Ses.AmbiyansDeniz, null);
         if (screenFader) yield return Fade(screenFader, 1f, 0f);
     }
 
