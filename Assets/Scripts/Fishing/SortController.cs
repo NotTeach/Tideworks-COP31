@@ -16,6 +16,8 @@ public class SortController : MonoBehaviour
     [SerializeField] string beachSceneName = "Beach";
     [Tooltip("2. gunun kumsali (caretta kurtarma)")]
     [SerializeField] string day2BeachSceneName = "Day2Beach";
+    [Tooltip("3. gunun kumsali: sezon finali (Buyuk Gece)")]
+    [SerializeField] string day3BeachSceneName = "Day3Beach";
     [SerializeField] CanvasGroup screenFader;
     [SerializeField] Sprite[] trashSprites;   // TrashCatalog.Trash sirasiyla
 
@@ -185,7 +187,12 @@ public class SortController : MonoBehaviour
     }
 
     /// <summary>Sonuc kartindaki "Continue": Gorev 3 (carettalara yardim) kumsalina gecer.</summary>
-    public void Done() => Leave(GameProgress.CurrentDay == 2 ? day2BeachSceneName : beachSceneName);
+    public void Done() => Leave(GameProgress.CurrentDay switch
+    {
+        2 => day2BeachSceneName,
+        3 => day3BeachSceneName,
+        _ => beachSceneName,
+    });
 
     /// <summary>Ust bardaki menu butonu.</summary>
     public void BackToMenu() => Leave(menuSceneName);

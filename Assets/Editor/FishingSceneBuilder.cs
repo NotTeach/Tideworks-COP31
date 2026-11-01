@@ -51,8 +51,10 @@ public static partial class FishingSceneBuilder
         RequestBeach();
         RequestRecycling();
         RequestDay2Beach();
+        RequestDay3Sea();
+        RequestDay3Beach();
         if (!File.Exists(Day2ScenePath) || EditorPrefs.GetInt(Day2VersionKey, 0) < BuilderVersion)
-            SceneAutoBuild.Request(Day2AutoBuildKey, () => Build(askToSave: true, day2: true));
+            SceneAutoBuild.Request(Day2AutoBuildKey, () => Build(askToSave: true, day: 2));
         if (File.Exists(ScenePath) && EditorPrefs.GetInt(VersionKey, 0) >= BuilderVersion) return;
         SceneAutoBuild.Request(AutoBuildKey, () => Build(askToSave: true));
     }
@@ -86,19 +88,30 @@ public static partial class FishingSceneBuilder
                 "Day2Sea sahnesi bastan kurulacak. Sahnede elle yaptiginiz degisiklikler silinir. Devam edilsin mi?",
                 "Rebuild", "Cancel"))
             return;
-        Build(askToSave: true, day2: true);
+        Build(askToSave: true, day: 2);
     }
 
-    /// <summary>day2: firtinali 2. gun denizi (hayalet aglar, ruzgar, yavru balik karti, bulutlar).</summary>
-    static void Build(bool askToSave, bool day2 = false)
+    /// <summary>
+    /// day 1: acik deniz (Fishing, 1. ve sonraki gunler) · day 2: firtinali deniz (hayalet aglar, ruzgar, yavru balik karti, bulutlar)
+    /// · day 3: kayalik havuzlar ve gizli koy (FishingSceneBuilder.Day3Sea.cs).
+    /// </summary>
+    static void Build(bool askToSave, int day = 1)
     {
         if (EditorApplication.isPlayingOrWillChangePlaymode) return;
         if (askToSave && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
-        string scenePath = day2 ? Day2ScenePath : ScenePath;
+        bool day2 = day == 2, day3 = day == 3;
+        string scenePath = day2 ? Day2ScenePath : day3 ? Day3ScenePath : ScenePath;
 
         ConfigureSprites(ArtDir);
         ConfigureSprites(UiDir);
         ConfigureSprites(ShopDir);
+        if (day3)
+        {
+            ConfigureSprites(Day3SeaDir);
+            ConfigureSprites(Day3Dir);
+            ConfigureSprites("Assets/Sprites/Day3Beach/");
+        }
+        var cove = day3 ? new CoveUi() : null;
         LoadFonts();
 
         var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
@@ -120,7 +133,7 @@ public static partial class FishingSceneBuilder
         var c = canvasGo.AddComponent<FishingController>();
 
         // ================= Gorev 1: deniz =================
-        var seaPage = Page(canvasGo.transform, "SeaPage", "Sea", out var sea);
+        var seaPage = Page(canvasGo.transform, "SeaPage", day3 ? "Day3Sea" : "Sea", out var sea, day3 ? Day3SeaDir : UiDir);
         var murk = Img(sea, "Murk", UiDir, "SeaMurk", new Rect(0, 0, Art.x, Art.y));
         var items = new GameObject("Catches", typeof(RectTransform)).transform as RectTransform;
         items.SetParent(sea, false);
@@ -142,6 +155,11 @@ public static partial class FishingSceneBuilder
         netCircle.color = new Color(1f, 1f, 1f, 0.9f);
         netCircle.gameObject.SetActive(false);
         var boat = Img(items, "Boat", ArtDir, "BoatTop", new Rect(1070, 664, 360, 192));
+        if (day3)
+        {
+            BuildCoveBoat(cove, items, boat);
+            BuildCovePages(cove, sea, c);
+        }
 
         // Firtina: gri ton, suda kayan bulut golgeleri, temizlendikce cikan gunes
         Image stormTint = null, sunGlow = null;
@@ -190,12 +208,12 @@ public static partial class FishingSceneBuilder
         fill.type = Image.Type.Simple;
 
         var task = Img(sea, "Task", UiDir, "HudDark520", new Rect(1600, 36, 560, 120));
-        Label(task.transform, "Title", day2 ? "TASK 2 · CLEAR THE GHOST NETS" : "TASK 1 · CLEAN THE OCEAN",
+        Label(task.transform, "Title", day2 ? "TASK 2 · CLEAR THE GHOST NETS" : day3 ? "" : "TASK 1 · CLEAN THE OCEAN",
             fontHeavy, 24, SoftTeal, new Rect(26, 12, 380, 36));
         var taskText = Label(task.transform, "Progress", "", fontTitle, 34, Color.white, new Rect(26, 50, 380, 56));
         var fishPill = Img(task.transform, "FishPill", UiDir, "HudPill", new Rect(394, 30, 150, 62));
         Img(fishPill.transform, "Fish", ArtDir, "FishAnchovy", new Rect(10, 17, 70, 27));
-        var fishText = Label(fishPill.transform, "Count", day2 ? "2" : "0/5", fontTitle, 32, Ink, new Rect(80, 2, 66, 62));
+        var fishText = Label(fishPill.transform, "Count", day2 ? "2" : day3 ? "10" : "0/5", fontTitle, 32, Ink, new Rect(80, 2, 66, 62));
 
         var tip = Img(sea, "Tooltip", UiDir, "Tooltip", new Rect(890, 176, 780, 140));
         var tooltip = tip.gameObject.AddComponent<CanvasGroup>();
@@ -207,8 +225,10 @@ public static partial class FishingSceneBuilder
         tipLine.resizeTextMinSize = 20;
         Label(tip.transform, "Rewards", day2
                 ? "<color=#B4472A>Ghost net +8</color> · the wind pushes trash ashore, <color=#17777A>catch the close ones first!</color>"
+                : day3 ? ""
                 : "<color=#B4472A>Trash +5</color> and a healthier ocean · <color=#17777A>fish return to clean water</color>",
             fontBody, 28, Brown, new Rect(32, 78, 716, 44));
+        if (day3) BuildCoveHud(cove, sea, tip);
 
         // Alt bar
         var equipped = Img(sea, "Equipped", UiDir, "EquippedCard", new Rect(40, 1280, 380, 130));
@@ -302,7 +322,7 @@ public static partial class FishingSceneBuilder
         RectTransform babyCard = null;
         Image babyFish = null;
         Text babyText = null;
-        if (day2)
+        if (day2 || day3)
         {
             var dim = MakeImage(sea, "BabyPrompt", null);
             dim.color = new Color(0.02f, 0.08f, 0.1f, 0.5f);
@@ -329,6 +349,7 @@ public static partial class FishingSceneBuilder
             babyCard = card.rectTransform;
             babyPrompt.SetActive(false);
         }
+        if (day3) BuildCoveCard(cove, sea, c);
 
         // ================= Ekran gecisi =================
         var faderImg = MakeImage(canvasGo.transform, "ScreenFader", null);
@@ -358,6 +379,10 @@ public static partial class FishingSceneBuilder
         var cso = new SerializedObject(c);
         cso.FindProperty("stormMode").boolValue = day2;
         cso.ApplyModifiedPropertiesWithoutUndo();
+        if (day3)
+        {
+            ApplyCove(cove, c, sea);
+        }
         SetArray(c, "bagIcons", bagIcons);
         SetArray(c, "trashSprites", TrashCatalog.Trash.Select(t => (Object)LoadSprite(t.sprite, ArtDir)).ToArray());
         SetArray(c, "fishSprites", TrashCatalog.FishSprites.Select(f => (Object)LoadSprite(f, ArtDir)).ToArray());
@@ -366,7 +391,7 @@ public static partial class FishingSceneBuilder
         ArtLocalization.Apply(canvasGo.transform);
         EditorSceneManager.SaveScene(scene, scenePath);
         AddToBuildSettings(scenePath);
-        EditorPrefs.SetInt(day2 ? Day2VersionKey : VersionKey, BuilderVersion);
+        EditorPrefs.SetInt(day2 ? Day2VersionKey : day3 ? Day3VersionKey : VersionKey, day3 ? Day3SeaVersion : BuilderVersion);
         Debug.Log("[Tideworks] Sea scene created: " + scenePath);
     }
 

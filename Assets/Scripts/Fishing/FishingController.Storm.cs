@@ -77,12 +77,13 @@ public partial class FishingController
     }
 
     /// <summary>Firtinada: yesterday'in 2 hayatta kalani + salinan yavrular + balik surusu.</summary>
-    int FishCount => SurvivorsAfterStorm + babiesReleased + schoolFish;
+    int FishCount => cove ? coveFish : SurvivorsAfterStorm + babiesReleased + schoolFish;
 
     float CurrentHealth
     {
         get
         {
+            if (cove) return CoveHealth;
             float h = Mathf.Lerp(healthStart, healthTarget, bag.Count / (float)Mathf.Max(1, TrashTotal));
             return Mathf.Clamp(h - lostToShore * ShoreDamage, 0f, 100f);
         }
@@ -91,6 +92,7 @@ public partial class FishingController
     /// <summary>Gunun copleri: (tur, hayalet ag mi, icinde yavru var mi).</summary>
     IEnumerable<(int, bool, bool)> TodaysCatch()
     {
+        if (cove) yield break;                 // 3. gunun copleri sabit yerlerde: SetupCove
         if (!storm)
         {
             for (int i = 0; i < TrashTotal; i++) yield return (i, false, false);
@@ -266,8 +268,9 @@ public partial class FishingController
             }
             if (ghostsBefore < GhostNets && ghostCollected >= GhostNets) yield return FishSchool();
         }
+        if (cove) yield return CoveLanded(got);
 
-        if (Remaining == 0) StartCoroutine(AllCollected());
+        if (!cove && Remaining == 0) StartCoroutine(AllCollected());
     }
 
     // ---------------- Firtina ----------------
@@ -302,6 +305,7 @@ public partial class FishingController
 
     void LateUpdate()
     {
+        if (cove) KeepMertUpright();
         if (!storm) return;
         stormShown = Mathf.MoveTowards(stormShown, stormTarget, Time.deltaTime * 0.25f);
         ApplyStormLook();
@@ -364,13 +368,17 @@ public partial class FishingController
             yield return Tween(0.5f, k => t.localScale = Vector3.one * (1f + 0.12f * Mathf.Sin(k * Mathf.PI)));
     }
 
-    /// <summary>Aga yavru balik takildi: Sal (+altin, olumlu soz) ya da Al (-altin, olumsuz soz).</summary>
-    IEnumerator BabyChoice()
+    /// <summary>
+    /// Yavru balik karti: Sal (+altin, olumlu soz) ya da Al (-altin, olumsuz soz).
+    /// 2. gun aga takilan yavrular; 3. gun yolda (question, altinlar ve sozler verilir).
+    /// </summary>
+    IEnumerator BabyChoice(string question = "A baby fish is tangled in the net! What will you do?",
+        int releaseCoins = BabyCoins, int keepCoins = BabyCoins, string releaseLine = null, string keepLine = null)
     {
         if (!babyPrompt) yield break;
         int species = TrashCatalog.FishReturnOrder[(babiesReleased + babiesKept) % TrashCatalog.FishReturnOrder.Length];
         babyPromptFish.sprite = fishSprites[species];
-        babyPromptText.text = Loc.T("A baby fish is tangled in the net! What will you do?");
+        babyPromptText.text = Loc.T(question);
         babyChoice = 0;
         if (babyButtons) babyButtons.SetActive(true);
         babyPrompt.SetActive(true);
@@ -384,18 +392,18 @@ public partial class FishingController
         if (babyChoice > 0)
         {
             babiesReleased++;
-            PlayerWallet.Add(BabyCoins);
+            PlayerWallet.Add(releaseCoins);
             TwSes.Efekt(Ses.Onay);
-            babyPromptText.text = Loc.T(ReleaseLines[n % ReleaseLines.Length]) + "\n<color=#C88A10>+" + BabyCoins + "</color>";
-            ShowFloating("+" + BabyCoins, boatPos, new Color32(255, 214, 92, 255));
+            babyPromptText.text = Loc.T(releaseLine ?? ReleaseLines[n % ReleaseLines.Length]) + "\n<color=#C88A10>+" + releaseCoins + "</color>";
+            ShowFloating("+" + releaseCoins, boatPos, new Color32(255, 214, 92, 255));
         }
         else
         {
             babiesKept++;
-            int lose = Mathf.Min(BabyCoins, PlayerWallet.Coins);
+            int lose = Mathf.Min(keepCoins, PlayerWallet.Coins);
             PlayerWallet.Add(-lose);
             TwSes.Efekt(Ses.Hata, 0.7f);
-            babyPromptText.text = Loc.T(KeepLines[n % KeepLines.Length]) + (lose > 0 ? "\n<color=#C0442E>-" + lose + "</color>" : "");
+            babyPromptText.text = Loc.T(keepLine ?? KeepLines[n % KeepLines.Length]) + (lose > 0 ? "\n<color=#C0442E>-" + lose + "</color>" : "");
             if (lose > 0) ShowFloating("-" + lose, boatPos, new Color32(255, 150, 130, 255));
         }
         RefreshHud();

@@ -52,6 +52,31 @@ public static class GameProgress
         set => PlayerPrefs.SetInt(FishKey, Mathf.Clamp(value, 0, TrashCatalog.FishSprites.Length));
     }
 
+    const string TrashKey = "progress.trashCollected";
+    const string EarnedKey = "progress.coinsEarned";
+    const string SeasonKey = "progress.seasonComplete";
+
+    /// <summary>Sezon boyunca denizden ve kumsaldan toplanan cop (sezon sonu karti).</summary>
+    public static int TrashCollected
+    {
+        get => PlayerPrefs.GetInt(TrashKey, 0);
+        set => PlayerPrefs.SetInt(TrashKey, Mathf.Max(0, value));
+    }
+
+    /// <summary>Sezon boyunca kazanilan toplam altin (harcananlar dusulmez).</summary>
+    public static int CoinsEarned
+    {
+        get => PlayerPrefs.GetInt(EarnedKey, 0);
+        set => PlayerPrefs.SetInt(EarnedKey, Mathf.Max(0, value));
+    }
+
+    /// <summary>3. gunun "Buyuk Gece"si bitti mi?</summary>
+    public static bool SeasonComplete
+    {
+        get => PlayerPrefs.GetInt(SeasonKey, 0) == 1;
+        set => PlayerPrefs.SetInt(SeasonKey, value ? 1 : 0);
+    }
+
     public static void NewGame()
     {
         PlayerPrefs.SetInt(DayKey, 1);
@@ -59,6 +84,9 @@ public static class GameProgress
         PlayerPrefs.SetInt(NestsKey, 0);
         PlayerPrefs.SetInt(HealthKey, 0);
         PlayerPrefs.SetInt(FishKey, 0);
+        PlayerPrefs.SetInt(TrashKey, 0);
+        PlayerPrefs.SetInt(EarnedKey, 0);
+        PlayerPrefs.SetInt(SeasonKey, 0);
         ShopManager.ResetSave();
         PlayerPrefs.Save();
     }
@@ -76,6 +104,9 @@ public static class GameProgress
         PlayerPrefs.DeleteKey(NestsKey);
         PlayerPrefs.DeleteKey(HealthKey);
         PlayerPrefs.DeleteKey(FishKey);
+        PlayerPrefs.DeleteKey(TrashKey);
+        PlayerPrefs.DeleteKey(EarnedKey);
+        PlayerPrefs.DeleteKey(SeasonKey);
         ShopManager.ResetSave();
         PlayerPrefs.Save();
     }

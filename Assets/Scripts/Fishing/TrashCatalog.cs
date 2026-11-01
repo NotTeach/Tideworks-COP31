@@ -28,6 +28,13 @@ public static class TrashCatalog
         new Entry("TrashRope", "Old rope", TrashBin.Household),
         new Entry("TrashFlipFlop", "Flip-flop", TrashBin.Household),
         new Entry("TrashPlank", "Dirty wood", TrashBin.Household),
+        // 3. gun: kayalik havuzlar ve gizli koy
+        new Entry("TrashBottleCap", "Bottle cap", TrashBin.Plastic),
+        new Entry("TrashStraw", "Straw", TrashBin.Plastic),
+        new Entry("TrashBrokenToy", "Broken toy", TrashBin.Plastic),
+        new Entry("TrashTire", "Old tire", TrashBin.Household),
+        new Entry("TrashPaintCan", "Paint can", TrashBin.Metal),
+        new Entry("TrashMilkCarton", "Milk carton", TrashBin.Paper),
     };
 
     public static readonly string[] FishSprites = { "FishSeaBream", "FishRedMullet", "FishAnchovy", "FishPuffer", "FishMackerel" };

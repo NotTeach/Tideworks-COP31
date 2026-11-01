@@ -15,23 +15,32 @@ EditorBuildSettings:
     path: Assets/Scenes/Workshop.unity
     guid: fa04704300dbb4e4eaa5005e4b792e9c
   - enabled: 1
-    path: Assets/Scenes/Day2Sea.unity
-    guid: 475181fc8be70c440af92b40552cf3d4
+    path: Assets/Scenes/Day3Sea.unity
+    guid: c10c7b84f4a446d4a85d196ad0effbd2
+  - enabled: 1
+    path: Assets/Scenes/Day3Workshop.unity
+    guid: f7ec9c89fb8804f4282f15355d686e5f
   - enabled: 1
     path: Assets/Scenes/Fishing.unity
     guid: 779582563a2abb040b2bfdef555d7da2
   - enabled: 1
-    path: Assets/Scenes/Day2Workshop.unity
-    guid: 0ddf710ba8e24004c813787fd96f265e
-  - enabled: 1
     path: Assets/Scenes/Recycling.unity
     guid: f940700e22727404b94b912107ff48fd
+  - enabled: 1
+    path: Assets/Scenes/Day2Sea.unity
+    guid: 475181fc8be70c440af92b40552cf3d4
+  - enabled: 1
+    path: Assets/Scenes/Day2Workshop.unity
+    guid: 0ddf710ba8e24004c813787fd96f265e
   - enabled: 1
     path: Assets/Scenes/Beach.unity
     guid: 687e9948f0cdbb343a556dd1672ce1af
   - enabled: 1
     path: Assets/Scenes/Day2Beach.unity
     guid: 8084b9be3f42c2a44a74493982773b28
+  - enabled: 1
+    path: Assets/Scenes/Day3Beach.unity
+    guid: 4960fc3a1d9204e4d86cd6d9f3922b4a
   - enabled: 1
     path: Assets/Scenes/SampleScene.unity
     guid: 8c9cfa26abfee488c85f1582747f6a02

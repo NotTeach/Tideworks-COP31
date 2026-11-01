@@ -422,7 +422,7 @@ public static partial class WorkshopSceneBuilder
         var fader = faderImg.gameObject.AddComponent<CanvasGroup>();
         fader.alpha = 1f;
 
-        SetRefs(c, ("interiorPage", interior), ("benchPage", benchPage), ("screenFader", fader), ("teddy", teddyCtl),
+        SetRefs(c, ("interiorPage", interior), ("benchPage", benchPage), ("screenFader", fader), ("bench", teddyCtl),
             ("subtitle", subtitle), ("healthText", health), ("coinText", coins), ("dialogue", dialogue),
             ("tellMoreButton", tellMore), ("letsFixButton", letsFix), ("dialogueHeadOutButton", headOut2),
             ("floatingText", floating), ("tasksButtonActive", tasksActive.gameObject), ("tasksPanel", panel.rectTransform),

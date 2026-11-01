@@ -34,7 +34,7 @@ public static partial class WorkshopSceneBuilder
 
     static WorkshopDay Day3 => new WorkshopDay
     {
-        day = 3, scenePath = Day3ScenePath, artDir = Day3Dir, version = 1, autoBuildKey = "Tideworks.Day3AutoBuild.v1",
+        day = 3, scenePath = Day3ScenePath, artDir = Day3Dir, version = 2, autoBuildKey = "Tideworks.Day3AutoBuild.v3",
         customer = "Mert", ownerSub = "His grandpa's compass",
         lines = MertLines, thanks = MertThanks,
         tasks = new[]
@@ -53,7 +53,7 @@ public static partial class WorkshopSceneBuilder
                       "and Mert knows every pool. Let's clean them up!",
         missionRows = new[] { ("Teal", "IconBoatWhite", "Sail to the rocks"), ("Green", "IconRecycleWhite", "Sort the trash"),
                               ("Orange", "IconTurtleWhite", "Final hatching night") },
-        seaScene = "Fishing", requiredItem = "", helpFirstLine = "Can you fix Grandpa's compass first? Please?",
+        seaScene = "Day3Sea", requiredItem = "", helpFirstLine = "Can you fix Grandpa's compass first? Please?",
         customerHead = new Vector2(1494, 640),
         steps = new[] { "Pick out the broken glass", "Fit a new lens", "Wake up the needle", "Seal the crack", "Clamp the dented rim", "Tie a new loop" },
         stepSubs = new[] { "Tweezers · 4 shards", "Sea-glass lens", "Magnet · 3 strokes", "Pliers · copper staples", "Screwdriver · tin clamp", "Net rope" },
