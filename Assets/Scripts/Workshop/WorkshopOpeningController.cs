@@ -15,7 +15,7 @@ using UnityEngine.UI;
 public class WorkshopOpeningController : MonoBehaviour
 {
     [Header("Sahneler (Build Settings'te ekli olmali)")]
-    [SerializeField] string seaSceneName = "SampleScene";
+    [SerializeField] string seaSceneName = "Fishing";
     [SerializeField] string menuSceneName = "MainMenu";
 
     [Header("Sayfalar")]
@@ -82,7 +82,10 @@ public class WorkshopOpeningController : MonoBehaviour
     [SerializeField] RectTransform rewardCard;
     [SerializeField] RectTransform rewardCoinIcon;
     [SerializeField] Image coinTemplate;
-    [SerializeField] RectTransform coinCounterIcon;
+    [Tooltip("Odul kartinin ustundeki \"120 > 160\" hapi")]
+    [SerializeField] Text counterPillFrom;
+    [SerializeField] Text counterPillTo;
+    [SerializeField] RectTransform counterPillCoin;
     [SerializeField] Text coinCounter;
     [SerializeField] int rewardCoins = 40;
     [SerializeField] GameObject rewardOverlay;
@@ -107,6 +110,14 @@ public class WorkshopOpeningController : MonoBehaviour
 
     void Awake()
     {
+        // Sahne bu scriptten eski bir kurucu surumuyle kurulduysa bazi alanlar bos kalir: cokmek yerine ne yapilacagini soyle
+        if (!coinCounter || !nextButton || !rewardOverlay || !missionOverlay || !counterPillTo || !repair)
+        {
+            Debug.LogError("[Tideworks] Workshop sahnesi eski. Unity menusu > Tideworks > Rebuild Workshop Scene ile yeniden kurun.", this);
+            enabled = false;
+            return;
+        }
+
         foreach (var button in GetComponentsInChildren<Button>(true))
             if (!button.GetComponent<TwButonSesi>())
                 button.gameObject.AddComponent<TwButonSesi>();
@@ -391,36 +402,45 @@ public class WorkshopOpeningController : MonoBehaviour
     /// <summary>Odul karti; altinlar karttan ust bardaki sayaca ucar.</summary>
     IEnumerator Reward()
     {
+        int start = GameProgress.Coins, shown = start;
+        counterPillFrom.text = counterPillTo.text = start.ToString();
+        rewardContinued = false;
         rewardOverlay.SetActive(true);
         TwSes.Efekt(Ses.OnarimTamam);
         yield return Pop(rewardCard);
-        yield return Wait(0.5f);
+        yield return Wait(0.4f);
 
+        // Altinlar yigindan ustteki sayac hapina ucar: "120 > 160"
         const int flying = 8;
-        int start = GameProgress.Coins, shown = start;
         GameProgress.Coins = start + rewardCoins;
         GameSettings.Save();
         var parent = (RectTransform)coinTemplate.transform.parent;
-        Vector2 from = LocalIn(parent, rewardCoinIcon), to = LocalIn(parent, coinCounterIcon);
+        Vector2 from = LocalIn(parent, rewardCoinIcon), to = LocalIn(parent, counterPillCoin);
         for (int i = 0; i < flying; i++)
         {
             int amount = rewardCoins * (i + 1) / flying - rewardCoins * i / flying;
             StartCoroutine(FlyCoin(from, to, () =>
             {
                 shown += amount;
-                coinCounter.text = shown.ToString();
-                coinCounterIcon.localScale = Vector3.one * 1.25f;
+                counterPillTo.text = shown.ToString();
+                counterPillCoin.localScale = Vector3.one * 1.25f;
                 TwSes.EfektCesitli(Ses.AtikTopla, 0.5f);
             }));
             yield return Wait(0.09f);
         }
-        yield return Wait(1.0f);
-        coinCounterIcon.localScale = Vector3.one;
-        coinCounter.text = GameProgress.Coins.ToString();
-        yield return Wait(1.6f);
+        yield return Wait(0.9f);
+        counterPillCoin.localScale = Vector3.one;
+        counterPillTo.text = coinCounter.text = GameProgress.Coins.ToString();
+
+        while (!rewardContinued) yield return null;
         yield return Tween(0.2f, t => rewardCard.localScale = Vector3.one * (1f - EaseIn(t)));
         rewardOverlay.SetActive(false);
     }
+
+    bool rewardContinued;
+
+    /// <summary>Odul kartindaki "Continue".</summary>
+    public void RewardContinue() => rewardContinued = true;
 
     IEnumerator FlyCoin(Vector2 from, Vector2 to, Action arrived)
     {

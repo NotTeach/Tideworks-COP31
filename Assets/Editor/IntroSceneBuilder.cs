@@ -25,7 +25,7 @@ public static class IntroSceneBuilder
     const string ScenePath = "Assets/Scenes/Intro.unity";
     const string SpriteDir = "Assets/Sprites/Intro/";
     const string FontDir = "Assets/Fonts/";
-    const string AutoBuildKey = "Tideworks.IntroAutoBuildTried.v2";
+    const string AutoBuildKey = "Tideworks.IntroAutoBuild.v2";
     static string VersionKey => "Tideworks.IntroBuilderVersion." + PlayerSettings.productGUID;
 
     // Tasarim 1280x720; artboard 2x (2560x1440). Asagidaki tum koordinatlar 1280x720'dedir.
@@ -56,9 +56,7 @@ public static class IntroSceneBuilder
     static IntroSceneBuilder()
     {
         if (File.Exists(ScenePath) && EditorPrefs.GetInt(VersionKey, 0) >= BuilderVersion) return;
-        if (SessionState.GetBool(AutoBuildKey, false)) return;
-        SessionState.SetBool(AutoBuildKey, true);
-        EditorApplication.delayCall += () => Build(askToSave: true);
+        SceneAutoBuild.Request(AutoBuildKey, () => Build(askToSave: true));
     }
 
     [MenuItem("Tideworks/Rebuild Intro Scene")]

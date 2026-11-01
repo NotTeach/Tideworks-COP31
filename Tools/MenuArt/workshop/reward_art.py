@@ -1,4 +1,4 @@
-"""Tamir sonrasi: odul karti, "Let's Save the Seas!" paneli, altin, nota ve kalp.
+"""Tamir sonrasi: altin, nota ve kalp (kartlar: panels_art.py).
 Kullanim: python reward_art.py <Assets/Sprites/Workshop>  (2x artboard pikseli)"""
 import sys
 import numpy as np
@@ -34,8 +34,6 @@ def card(name, w, h, r, header=0, shadow=18):
     im.resize((im.width // S, im.height // S), Image.LANCZOS).save(f"{out}/{name}.png")
 
 
-card("RewardCard", 1000, 560, 44, header=150)
-card("MissionCard", 1400, 980, 48, header=170)
 
 # Altin
 s = 96 * S
