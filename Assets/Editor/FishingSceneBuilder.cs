@@ -23,7 +23,7 @@ using static MainMenuSceneBuilder;
 [InitializeOnLoad]
 public static partial class FishingSceneBuilder
 {
-    const int BuilderVersion = 8;
+    const int BuilderVersion = 9;
     const string ScenePath = "Assets/Scenes/Fishing.unity";
     const string Day2ScenePath = "Assets/Scenes/Day2Sea.unity";
     const string ShopDir = "Assets/Sprites/Shop/";
@@ -32,8 +32,8 @@ public static partial class FishingSceneBuilder
     const string BeachDir = "Assets/Sprites/Beach/";
     const string CoinPath = "Assets/Sprites/Workshop/";
     const string FontDir = "Assets/Fonts/";
-    const string AutoBuildKey = "Tideworks.FishingAutoBuild.v8";
-    const string Day2AutoBuildKey = "Tideworks.Day2SeaAutoBuild.v8";
+    const string AutoBuildKey = "Tideworks.FishingAutoBuild.v9";
+    const string Day2AutoBuildKey = "Tideworks.Day2SeaAutoBuild.v9";
     static string VersionKey => "Tideworks.FishingBuilderVersion." + PlayerSettings.productGUID;
     static string Day2VersionKey => "Tideworks.Day2SeaBuilderVersion." + PlayerSettings.productGUID;
 
@@ -298,7 +298,7 @@ public static partial class FishingSceneBuilder
         Clickable(go, c.CloseHowTo);
         howTo.gameObject.SetActive(false);
 
-        GameObject babyPrompt = null;
+        GameObject babyPrompt = null, babyButtons = null;
         RectTransform babyCard = null;
         Image babyFish = null;
         Text babyText = null;
@@ -314,10 +314,15 @@ public static partial class FishingSceneBuilder
             babyFish.preserveAspect = true;
             babyText = Label(card.transform, "Line", "", fontHeavy, 40, Brown, new Rect(90, 320, 920, 200), TextAnchor.MiddleCenter);
             babyText.horizontalOverflow = HorizontalWrapMode.Wrap;
-            var release = Img(card.transform, "Release", UiDir, "GoButton", new Rect(90, 570, 440, 124));
+            // Sal / Al butonlari bir grupta: secim yapilinca hemen gizlenir (tiklamanin alindigi belli olsun)
+            var choice = new GameObject("Buttons", typeof(RectTransform)).transform as RectTransform;
+            choice.SetParent(card.transform, false);
+            Place(choice, new Rect(0, 0, 1100, 760));
+            babyButtons = choice.gameObject;
+            var release = Img(choice, "Release", UiDir, "GoButton", new Rect(90, 570, 440, 124));
             Label(release.transform, "Text", "Release", fontTitle, 52, Color.white, new Rect(0, -6, 440, 124), TextAnchor.MiddleCenter);
             Clickable(release, c.ReleaseBaby);
-            var keep = Img(card.transform, "Keep", UiDir, "FinishButton", new Rect(570, 570, 440, 124));
+            var keep = Img(choice, "Keep", UiDir, "FinishButton", new Rect(570, 570, 440, 124));
             Label(keep.transform, "Text", "Keep", fontTitle, 52, new Color32(70, 48, 30, 255), new Rect(0, -6, 440, 124), TextAnchor.MiddleCenter);
             Clickable(keep, c.KeepBaby);
             babyPrompt = dim.gameObject;
@@ -347,7 +352,8 @@ public static partial class FishingSceneBuilder
             ("rodIcon", LoadSprite("Rod", ArtDir)), ("sturdyRodIcon", LoadSprite("ItemSturdyRod", ShopDir)),
             ("netIcon", LoadSprite("ItemBigNet", ShopDir)), ("netCircle", netCircle.rectTransform),
             ("stormTint", stormTint), ("sunGlow", sunGlow), ("babyPrompt", babyPrompt),
-            ("babyPromptCard", babyCard), ("babyPromptFish", babyFish), ("babyPromptText", babyText));
+            ("babyPromptCard", babyCard), ("babyPromptFish", babyFish), ("babyPromptText", babyText),
+            ("babyButtons", babyButtons));
         SetArray(c, "cloudShadows", clouds);
         var cso = new SerializedObject(c);
         cso.FindProperty("stormMode").boolValue = day2;

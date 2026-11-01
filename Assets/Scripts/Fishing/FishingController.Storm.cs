@@ -31,6 +31,7 @@ public partial class FishingController
     [SerializeField] RectTransform babyPromptCard;
     [SerializeField] Image babyPromptFish;
     [SerializeField] Text babyPromptText;
+    [SerializeField] GameObject babyButtons;
 
     const int GhostNets = 6, NormalTrashInStorm = 7, GhostReward = 8, TrashReward = 5, BabyCoins = 5, ShoreDamage = 2;
     const int GhostKind = 8;              // TrashCatalog.Trash: "TrashGhostNet"
@@ -371,18 +372,21 @@ public partial class FishingController
         babyPromptFish.sprite = fishSprites[species];
         babyPromptText.text = Loc.T("A baby fish is tangled in the net! What will you do?");
         babyChoice = 0;
+        if (babyButtons) babyButtons.SetActive(true);
         babyPrompt.SetActive(true);
         TwSes.Efekt(Ses.GecisKabarcik, 0.8f);
         yield return Tween(0.3f, t => babyPromptCard.localScale = Vector3.one * EaseOutBack(t));
         while (babyChoice == 0) yield return null;
 
+        // Secim hemen gorunsun: butonlar kalkar, sonuc cumlesi ve altin karta yazilir
+        if (babyButtons) babyButtons.SetActive(false);
         int n = babiesReleased + babiesKept;
         if (babyChoice > 0)
         {
             babiesReleased++;
             PlayerWallet.Add(BabyCoins);
             TwSes.Efekt(Ses.Onay);
-            babyPromptText.text = Loc.T(ReleaseLines[n % ReleaseLines.Length]);
+            babyPromptText.text = Loc.T(ReleaseLines[n % ReleaseLines.Length]) + "\n<color=#C88A10>+" + BabyCoins + "</color>";
             ShowFloating("+" + BabyCoins, boatPos, new Color32(255, 214, 92, 255));
         }
         else
@@ -391,11 +395,12 @@ public partial class FishingController
             int lose = Mathf.Min(BabyCoins, PlayerWallet.Coins);
             PlayerWallet.Add(-lose);
             TwSes.Efekt(Ses.Hata, 0.7f);
-            babyPromptText.text = Loc.T(KeepLines[n % KeepLines.Length]);
+            babyPromptText.text = Loc.T(KeepLines[n % KeepLines.Length]) + (lose > 0 ? "\n<color=#C0442E>-" + lose + "</color>" : "");
             if (lose > 0) ShowFloating("-" + lose, boatPos, new Color32(255, 150, 130, 255));
         }
         RefreshHud();
-        yield return new WaitForSeconds(2.2f);
+        yield return Tween(0.18f, t => babyPromptCard.localScale = Vector3.one * (1f + 0.06f * Mathf.Sin(t * Mathf.PI)));
+        yield return new WaitForSeconds(1.6f);
         yield return Tween(0.2f, t => babyPromptCard.localScale = Vector3.one * (1f - t));
         babyPrompt.SetActive(false);
 
