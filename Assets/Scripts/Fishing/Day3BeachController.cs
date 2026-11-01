@@ -66,6 +66,22 @@ public class Day3BeachController : MonoBehaviour
     [SerializeField] GameObject umutLabel;
     [SerializeField] Text umutName;
 
+    [Header("Canlandirma")]
+    [Tooltip("Kumsaldaki kafe isik dizisi: Hatice Teyze radyodan seslenince tek tek soner")]
+    [SerializeField] Image[] cafeBulbs;
+    [SerializeField] Image[] cafeGlows;
+    [SerializeField] Image lightString;
+    [SerializeField] Color bulbOn = new Color(1f, 0.84f, 0.45f), bulbOff = new Color(0.42f, 0.42f, 0.4f);
+    [SerializeField] RectTransform moon;
+    [SerializeField] Image[] stars;
+    [Tooltip("Elif'in dolduracagi cukurlar")]
+    [SerializeField] Image[] holes;
+    [SerializeField] Sprite holeFilled;
+    [Tooltip("Mert'in kepcesiyle toplayacagi kucuk copler")]
+    [SerializeField] Image[] mertTrash;
+    [SerializeField] RectTransform trackLayer;
+    [SerializeField] Image trackTemplate, splashTemplate, sparkleTemplate, ringTemplate;
+
     [Header("Defter ve sezon sonu")]
     [SerializeField] GameObject notebook;
     [SerializeField] RectTransform notebookCard;
@@ -98,8 +114,10 @@ public class Day3BeachController : MonoBehaviour
 
     readonly bool[] assigned = new bool[3];
     readonly List<RectTransform> peeking = new List<RectTransform>();
-    int selectedJob = -1, jobsDone, trashLeft, reached;
-    bool busy, leaving, lampPlaced;
+    readonly List<RectTransform> umutBabies = new List<RectTransform>();
+    readonly List<(Image img, float born)> tracks = new List<(Image, float)>();
+    int selectedJob = -1, jobsDone, trashLeft, reached, helpersWorking;
+    bool busy, leaving, lampPlaced, isNight, leavingCove, cafesOn = true;
     Action onButton;
     static int startCoins = -1, startTrash, startEarned;
 
@@ -119,6 +137,28 @@ public class Day3BeachController : MonoBehaviour
     void OnEnable() => PlayerWallet.OnChanged += OnCoins;
     void OnDisable() => PlayerWallet.OnChanged -= OnCoins;
     void OnCoins(int c) => coinText.text = c.ToString();
+
+    void Update()
+    {
+        float now = Time.time;
+        if (cafesOn)                                         // kafe ampulleri hafifce titrer
+            for (int i = 0; i < cafeGlows.Length; i++)
+                SetAlpha(cafeGlows[i], 0.55f + 0.15f * Mathf.Sin(now * 3f + i * 1.7f));
+        if (isNight)                                         // yildizlar parildar
+            for (int i = 0; i < stars.Length; i++)
+            {
+                float k = 0.5f + 0.5f * Mathf.Sin(now * (1.3f + 0.37f * i) + i * 2.1f);
+                SetAlpha(stars[i], 0.25f + 0.75f * k);
+                stars[i].rectTransform.localScale = Vector3.one * (0.7f + 0.3f * k);
+            }
+        for (int i = tracks.Count - 1; i >= 0; i--)          // yavru izleri kumda yavasca kaybolur
+        {
+            var (img, born) = tracks[i];
+            float a = 0.4f * (1f - (now - born) / 4f);
+            if (a <= 0f) { Destroy(img.gameObject); tracks.RemoveAt(i); continue; }
+            SetAlpha(img, a);
+        }
+    }
 
     void Start()
     {
@@ -142,6 +182,12 @@ public class Day3BeachController : MonoBehaviour
         SetAlpha(lampBulb, 0f);
         SetAlpha(night, 0f);
         hatchlingTemplate.gameObject.SetActive(false);
+        foreach (var t in new[] { trackTemplate, splashTemplate, sparkleTemplate, ringTemplate }) t.gameObject.SetActive(false);
+        foreach (var b in cafeBulbs) b.color = bulbOn;
+        moon.gameObject.SetActive(false);
+        foreach (var s in stars) SetAlpha(s, 0f);
+        foreach (var h in holes) h.gameObject.SetActive(false);
+        foreach (var m in mertTrash) m.gameObject.SetActive(false);
         foreach (var t in shoreTrash) t.gameObject.SetActive(false);
         umut.gameObject.SetActive(false);
         umutLabel.SetActive(false);
@@ -274,10 +320,32 @@ public class Day3BeachController : MonoBehaviour
         TwSes.Efekt(Ses.Onay);
         Say(helper, RightLines[job]);
         taskCounts[0].text = jobsDone + "/3";
+        if (job == 1) StartCoroutine(CafesOff());
         var hr = helpers[helper];
         StartCoroutine(Tween(0.3f, t => hr.localScale = Vector3.one * (1f + 0.06f * Mathf.Sin(t * Mathf.PI))));
         if (jobsDone == chips.Length) StartCoroutine(JobsDone());
         return true;
+    }
+
+    /// <summary>Hatice Teyze radyodan seslenir: kumsaldaki kafe isiklari birer birer soner.</summary>
+    IEnumerator CafesOff()
+    {
+        TwSes.Efekt(Ses.RadyoAcilis, 0.6f);
+        yield return Wait(1.2f);
+        cafesOn = false;
+        for (int i = cafeBulbs.Length - 1; i >= 0; i--)
+        {
+            var bulb = cafeBulbs[i];
+            var glow = cafeGlows[i];
+            float from = glow.color.a;
+            TwSes.Efekt(Ses.Tik, 0.4f);
+            yield return Tween(0.18f, t =>
+            {
+                bulb.color = Color.Lerp(bulbOn, bulbOff, t);
+                SetAlpha(glow, from * (1f - t));
+            });
+            yield return Wait(0.12f);
+        }
     }
 
     IEnumerator JobsDone()
@@ -336,12 +404,21 @@ public class Day3BeachController : MonoBehaviour
     {
         busy = true;
         TwSes.Efekt(Ses.GecisParilti, 0.7f);
-        yield return Tween(2.4f, t =>
+        moon.gameObject.SetActive(true);
+        var moonImg = moon.GetComponent<Image>();
+        Vector2 moonTo = moon.anchoredPosition, moonFrom = moonTo + new Vector2(0f, -140f);
+        yield return Tween(2.6f, t =>
         {
             float k = Mathf.SmoothStep(0, 1, t);
             SetAlpha(night, k);
             foreach (var n in nests) n.color = Color.Lerp(Color.white, nestNightTint, k);
+            lightString.color = Color.Lerp(Color.white, nestNightTint, k);
+            moon.anchoredPosition = Vector2.Lerp(moonFrom, moonTo, k);
+            SetAlpha(moonImg, k);
+            foreach (var s in stars) SetAlpha(s, k * 0.6f);
         });
+        isNight = true;
+        foreach (var h in helpers) h.GetComponent<Image>().raycastTarget = false;     // yuruyen yardimcilar coplere dokunmayi engellemesin
         // Yuvalar kipirdar, yavrular basini cikarir; ruzgar kiyiya cop getirir
         TwSes.Efekt(Ses.Pop, 0.7f);
         for (int i = 0; i < nests.Length; i++)
@@ -358,9 +435,92 @@ public class Day3BeachController : MonoBehaviour
             var rt = (RectTransform)t.transform;
             StartCoroutine(Tween(0.4f, k => rt.localScale = Vector3.one * EaseOutBack(k)));
         }
+        foreach (var h in holes) { h.gameObject.SetActive(true); h.color = nestNightTint; }
+        foreach (var m in mertTrash) { m.gameObject.SetActive(true); m.color = Color.Lerp(Color.white, nestNightTint, 0.5f); }
         Say(0, "The sand is moving! But the wind brought two bags and a piece of net to the shore. Pick them up quickly!");
         busy = false;
         StartCoroutine(Wiggle());
+        // Yardimcilar da kendi islerini yapar: Elif cukurlari doldurur, Mert kiyidaki kucuk copleri toplar
+        helpersWorking = 2;
+        StartCoroutine(ElifFills());
+        StartCoroutine(MertCollects());
+        while (trashLeft > 0 || helpersWorking > 0)
+        {
+            if (trashLeft == 0 && helpersWorking > 0 && !busy)
+            {
+                busy = true;                                 // oyuncu bitirdi, yardimcilari bekliyor
+                Say(2, "Nice work! Give us a second, we're almost done too!");
+            }
+            yield return null;
+        }
+        yield return PathClear();
+    }
+
+    // ---------------- Yardimcilar is basinda ----------------
+
+    /// <summary>Karakteri ayaklari 'feet' (artboard) noktasina gelecek sekilde yurutur; etiketi de pesinden gelir.</summary>
+    IEnumerator WalkTo(int who, Vector2 feet, float scale, float speed = 520f)
+    {
+        var rt = helpers[who];
+        var pill = (RectTransform)helperPills[who].transform;
+        Vector2 pillOffset = pill.anchoredPosition - rt.anchoredPosition;
+        float half = rt.sizeDelta.y / 2f;
+        Vector2 from = rt.anchoredPosition, to = new Vector2(feet.x, -feet.y + half * scale);
+        float s0 = rt.localScale.x;
+        float dur = Mathf.Max(0.5f, Vector2.Distance(from, to) / speed);
+        yield return Tween(dur, t =>
+        {
+            float k = Mathf.SmoothStep(0, 1, t);
+            float s = Mathf.Lerp(s0, scale, k);
+            var p = Vector2.Lerp(from, to, k) + new Vector2(0f, Mathf.Abs(Mathf.Sin(t * dur * 9f)) * 14f);
+            rt.anchoredPosition = p;
+            rt.localScale = Vector3.one * s;
+            pill.anchoredPosition = p + pillOffset * s;
+            pill.localScale = Vector3.one * s;
+        });
+    }
+
+    IEnumerator ElifFills()
+    {
+        var e = helpers[1];
+        Vector2 home = e.anchoredPosition;
+        float half = e.sizeDelta.y / 2f;
+        yield return Wait(1f);
+        foreach (var h in holes)
+        {
+            var c = h.rectTransform.anchoredPosition;
+            yield return WalkTo(1, new Vector2(c.x + 120f, -c.y + 14f), 0.82f);
+            TwSes.Efekt(Ses.Zimpara, 0.5f);
+            Sparkles(new Vector2(c.x, -c.y), 3, 40f);
+            yield return Tween(0.6f, t => h.rectTransform.localScale = Vector3.one * (1f + 0.08f * Mathf.Sin(t * Mathf.PI * 3f)));
+            h.sprite = holeFilled;
+        }
+        yield return WalkTo(1, new Vector2(home.x, -home.y + half), 1f);
+        helpersWorking--;
+    }
+
+    IEnumerator MertCollects()
+    {
+        var m = helpers[2];
+        Vector2 home = m.anchoredPosition;
+        float half = m.sizeDelta.y / 2f;
+        yield return Wait(0.4f);
+        foreach (var t in mertTrash)
+        {
+            var c = t.rectTransform.anchoredPosition;
+            yield return WalkTo(2, new Vector2(c.x + 70f, -c.y + 20f), 0.85f);
+            TwSes.Efekt(Ses.AtikTopla, 0.5f);
+            var img = t;
+            var start = c;
+            yield return Tween(0.5f, k =>
+            {
+                img.rectTransform.anchoredPosition = start + new Vector2(30f * k, 90f * k);
+                SetAlpha(img, 1f - k);
+            });
+            t.gameObject.SetActive(false);
+        }
+        yield return WalkTo(2, new Vector2(home.x, -home.y + half), 1f);
+        helpersWorking--;
     }
 
     Vector2 NestTop(int i) => nests[i].rectTransform.anchoredPosition + new Vector2(-24f, 12f);
@@ -390,7 +550,7 @@ public class Day3BeachController : MonoBehaviour
     void PickTrash(int i)
     {
         var b = shoreTrash[i];
-        if (busy || !b.interactable) return;
+        if (!isNight || !b.interactable) return;
         b.interactable = false;
         trashLeft--;
         PlayerWallet.Add(trashReward);
@@ -405,7 +565,6 @@ public class Day3BeachController : MonoBehaviour
             rt.anchoredPosition = start + new Vector2(0, 80f * t);
             group.alpha = 1f - t;
         }));
-        if (trashLeft == 0) StartCoroutine(PathClear());
     }
 
     IEnumerator PathClear()
@@ -414,7 +573,7 @@ public class Day3BeachController : MonoBehaviour
         CompleteTask(2);
         for (int i = 0; i < helperPillTicks.Length; i++) helperPillTicks[i].gameObject.SetActive(true);
         yield return Wait(0.6f);
-        // 30 yavru denize kosar
+        // 30 yavru denize kosar; biri yolda sirt ustu doner, oyuncu cevirir
         TwSes.Efekt(Ses.GecisParilti);
         Say(1, "Thirty of them! Look how fast they run to the sea!");
         var rng = new System.Random(30);
@@ -424,44 +583,165 @@ public class Day3BeachController : MonoBehaviour
         for (int n = 0; n < nests.Length; n++)
             for (int i = 0; i < hatchlingsPerNest; i++)
             {
-                RectTransform rt;
                 int slot = n * 4 + i;
-                if (i < 4 && slot < peeking.Count) rt = peeking[slot];
-                else rt = null;
+                RectTransform rt = i < 4 && slot < peeking.Count ? peeking[slot] : null;
                 var start = NestTop(n) + new Vector2((float)rng.NextDouble() * 140f - 70f, (float)rng.NextDouble() * 24f);
                 float speed = Mathf.Lerp(150f, 230f, (float)rng.NextDouble());
                 float delay = i < 4 ? 0f : (float)rng.NextDouble() * 2.6f;
                 float drift = (float)rng.NextDouble() * 120f - 60f;
-                StartCoroutine(Run(rt, start, speed, delay, drift, (float)rng.NextDouble() * 6f));
+                bool flips = n == 1 && i == 5;
+                if (flips) { delay = 0.8f; drift = 0f; speed = 170f; }
+                StartCoroutine(Run(rt, start, speed, delay, drift, (float)rng.NextDouble() * 6f, flips));
             }
         peeking.Clear();
         while (reached < total) yield return null;
         CompleteTask(3);
-        yield return Wait(1f);
+        yield return Celebrate();
         yield return Umut();
     }
 
-    IEnumerator Run(RectTransform rt, Vector2 start, float speed, float delay, float drift, float phase)
+    IEnumerator Run(RectTransform rt, Vector2 start, float speed, float delay, float drift, float phase, bool flips = false)
     {
         yield return Wait(delay);
         if (!rt) rt = NewHatchling(start);
         var img = rt.GetComponent<Image>();
         var p = rt.anchoredPosition;
-        Vector2 home = p;
+        Vector2 home = p, lastTrack = p;
         float scale = rt.localScale.x;
+        float flipAt = Mathf.Lerp(home.y, -seaLine, 0.45f);
         while (p.y < -seaLine)
         {
+            if (flips && p.y >= flipAt)
+            {
+                flips = false;
+                yield return Flipped(rt);
+            }
             float t = Time.time * 10f + phase;
             p += new Vector2(drift * Time.deltaTime + Mathf.Sin(t) * 0.8f, speed * Time.deltaTime);
             rt.anchoredPosition = p;
             rt.localRotation = Quaternion.Euler(0, 0, Mathf.Sin(t) * 14f);
             rt.localScale = Vector3.one * Mathf.Lerp(scale, 0.7f, Mathf.InverseLerp(home.y, -seaLine, p.y));
+            if (Vector2.Distance(p, lastTrack) > 26f) { Track(p); lastTrack = p; }
             yield return null;
         }
         reached++;
         taskCounts[3].text = reached.ToString();
+        Splash(p);
         yield return Tween(0.35f, t => SetAlpha(img, 1f - t));
         Destroy(rt.gameObject);
+    }
+
+    /// <summary>Bir yavru sirt ustu doner: oyuncu dokunup cevirene kadar bekler (+5).</summary>
+    IEnumerator Flipped(RectTransform rt)
+    {
+        var img = rt.GetComponent<Image>();
+        img.raycastTarget = true;
+        var btn = rt.gameObject.AddComponent<Button>();
+        btn.transition = Selectable.Transition.None;
+        bool helped = false;
+        btn.onClick.AddListener(() => helped = true);
+        var ring = Instantiate(ringTemplate, hatchLayer);
+        ring.gameObject.SetActive(true);
+        ring.rectTransform.anchoredPosition = rt.anchoredPosition;
+        ring.raycastTarget = false;
+        TwSes.Efekt(Ses.Hata, 0.4f);
+        Say(1, "Oh! One little one flipped onto its back. Tap it gently to help!");
+        while (!helped)
+        {
+            rt.localRotation = Quaternion.Euler(0, 0, 180f + Mathf.Sin(Time.time * 14f) * 18f);
+            ring.rectTransform.localScale = Vector3.one * (1f + 0.08f * Mathf.Sin(Time.time * 6f));
+            yield return null;
+        }
+        Destroy(btn);
+        img.raycastTarget = false;
+        Destroy(ring.gameObject);
+        PlayerWallet.Add(trashReward);
+        TwSes.Efekt(Ses.Onay);
+        Sparkles(new Vector2(rt.anchoredPosition.x, -rt.anchoredPosition.y), 4, 50f);
+        float r0 = rt.localEulerAngles.z;
+        yield return Tween(0.4f, t => rt.localRotation = Quaternion.Euler(0, 0, Mathf.Lerp(r0, 360f, t)));
+        Say(1, "There you go, little one! The sea is that way! +5");
+    }
+
+    void Track(Vector2 at)
+    {
+        var img = Instantiate(trackTemplate, trackLayer);
+        img.gameObject.SetActive(true);
+        img.rectTransform.anchoredPosition = at + new Vector2(0f, -10f);
+        tracks.Add((img, Time.time));
+    }
+
+    void Splash(Vector2 at)
+    {
+        var img = Instantiate(splashTemplate, hatchLayer);
+        img.gameObject.SetActive(true);
+        var rt = img.rectTransform;
+        rt.anchoredPosition = at;
+        StartCoroutine(SplashFx(img));
+    }
+
+    IEnumerator SplashFx(Image img)
+    {
+        var rt = img.rectTransform;
+        yield return Tween(0.5f, t =>
+        {
+            rt.localScale = new Vector3(Mathf.Lerp(0.3f, 1f, t), Mathf.Lerp(0.15f, 0.5f, t), 1f);
+            SetAlpha(img, 0.8f * (1f - t));
+        });
+        Destroy(img.gameObject);
+    }
+
+    /// <summary>Parilti patlamasi (artboard noktasi etrafinda).</summary>
+    void Sparkles(Vector2 art, int count, float radius)
+    {
+        for (int i = 0; i < count; i++)
+        {
+            var img = Instantiate(sparkleTemplate, hatchLayer);
+            img.gameObject.SetActive(true);
+            var at = new Vector2(art.x, -art.y) + UnityEngine.Random.insideUnitCircle * radius;
+            img.rectTransform.anchoredPosition = at;
+            StartCoroutine(SparkleFx(img, UnityEngine.Random.Range(0f, 0.4f)));
+        }
+    }
+
+    IEnumerator SparkleFx(Image img, float delay)
+    {
+        SetAlpha(img, 0f);
+        yield return Wait(delay);
+        var rt = img.rectTransform;
+        yield return Tween(0.7f, t =>
+        {
+            rt.localScale = Vector3.one * Mathf.Sin(t * Mathf.PI) * 1.1f;
+            rt.localRotation = Quaternion.Euler(0, 0, t * 90f);
+            SetAlpha(img, Mathf.Sin(t * Mathf.PI));
+        });
+        Destroy(img.gameObject);
+    }
+
+    /// <summary>30 yavru da denizde: herkes sevincle ziplar, denizde parilti.</summary>
+    IEnumerator Celebrate()
+    {
+        TwSes.Efekt(Ses.OnarimTamam);
+        Say(0, "All thirty are in the sea! Have a safe journey, little ones!");
+        for (int i = 0; i < 14; i++)
+            Sparkles(new Vector2(UnityEngine.Random.Range(200f, 2300f), UnityEngine.Random.Range(330f, 620f)), 1, 0f);
+        var homes = new Vector2[helpers.Length];
+        var pillHomes = new Vector2[helpers.Length];
+        for (int i = 0; i < helpers.Length; i++)
+        {
+            homes[i] = helpers[i].anchoredPosition;
+            pillHomes[i] = ((RectTransform)helperPills[i].transform).anchoredPosition;
+        }
+        yield return Tween(1.4f, t =>
+        {
+            for (int i = 0; i < helpers.Length; i++)
+            {
+                float jump = Mathf.Abs(Mathf.Sin((t * 2f + i * 0.15f) * Mathf.PI)) * 46f;
+                helpers[i].anchoredPosition = homes[i] + new Vector2(0f, jump);
+                ((RectTransform)helperPills[i].transform).anchoredPosition = pillHomes[i] + new Vector2(0f, jump);
+            }
+        });
+        yield return Wait(1.4f);
     }
 
     // ---------------- Umut ----------------
@@ -472,10 +752,18 @@ public class Day3BeachController : MonoBehaviour
         var img = umut.GetComponent<Image>();
         Vector2 home = umut.anchoredPosition;
         TwSes.Efekt(Ses.GecisDalga, 0.8f);
+        // Denize ulasan yavrulardan bazilari Umut'un yaninda yuzer
+        for (int i = 0; i < 6; i++)
+        {
+            var b = NewHatchling(home);
+            b.localScale = Vector3.one * 0.75f;
+            umutBabies.Add(b);
+        }
         yield return Tween(1.4f, t =>
         {
             SetAlpha(img, t);
             umut.anchoredPosition = home + new Vector2(0, -50f * (1f - t));
+            for (int i = 0; i < umutBabies.Count; i++) SetAlpha(umutBabies[i].GetComponent<Image>(), t);
         });
         umutName.text = Day2BeachController.CarettaName;
         umutLabel.SetActive(true);
@@ -487,10 +775,18 @@ public class Day3BeachController : MonoBehaviour
 
     IEnumerator Bob(Vector2 home)
     {
-        while (umut.gameObject.activeSelf && !notebook.activeSelf)
+        while (umut.gameObject.activeSelf && !leavingCove)
         {
-            umut.anchoredPosition = home + new Vector2(Mathf.Sin(Time.time * 0.8f) * 14f, Mathf.Sin(Time.time * 1.6f) * 6f);
-            umut.localRotation = Quaternion.Euler(0, 0, Mathf.Sin(Time.time * 0.8f) * 4f);
+            float now = Time.time;
+            umut.anchoredPosition = home + new Vector2(Mathf.Sin(now * 0.8f) * 14f, Mathf.Sin(now * 1.6f) * 6f);
+            umut.localRotation = Quaternion.Euler(0, 0, Mathf.Sin(now * 0.8f) * 4f);
+            for (int i = 0; i < umutBabies.Count; i++)
+            {
+                float a = now * 0.9f + i * Mathf.PI * 2f / umutBabies.Count;
+                var b = umutBabies[i];
+                b.anchoredPosition = umut.anchoredPosition + new Vector2(Mathf.Cos(a) * 230f, Mathf.Sin(a) * 70f - 40f);
+                b.localRotation = Quaternion.Euler(0, 0, a * Mathf.Rad2Deg + 180f);
+            }
             yield return null;
         }
     }
@@ -500,16 +796,29 @@ public class Day3BeachController : MonoBehaviour
     IEnumerator Notebook()
     {
         busy = true;
-        // Umut yavrularla acik denize gider
+        leavingCove = true;
+        // Umut yavrularla birlikte acik denize gider
         var img = umut.GetComponent<Image>();
         Vector2 from = umut.anchoredPosition;
+        var babyFrom = new List<Vector2>();
+        foreach (var b in umutBabies) babyFrom.Add(b.anchoredPosition);
         umutLabel.SetActive(false);
-        yield return Tween(1.2f, t =>
+        TwSes.Efekt(Ses.GecisDalga, 0.6f);
+        yield return Tween(2f, t =>
         {
-            umut.anchoredPosition = from + new Vector2(0, 110f * t);
-            umut.localScale = Vector3.one * Mathf.Lerp(1f, 0.5f, t);
-            SetAlpha(img, 1f - t);
+            umut.anchoredPosition = from + new Vector2(0, 130f * t);
+            umut.localScale = Vector3.one * Mathf.Lerp(1f, 0.45f, t);
+            SetAlpha(img, 1f - t * t);
+            for (int i = 0; i < umutBabies.Count; i++)
+            {
+                var b = umutBabies[i];
+                b.anchoredPosition = Vector2.Lerp(babyFrom[i], from + new Vector2(0, 130f * t), t * 0.6f) + new Vector2(0, 140f * t);
+                b.localRotation = Quaternion.identity;
+                SetAlpha(b.GetComponent<Image>(), 1f - t);
+            }
         });
+        foreach (var b in umutBabies) Destroy(b.gameObject);
+        umutBabies.Clear();
         umut.gameObject.SetActive(false);
         dialogText.text = "";
         notebook.SetActive(true);

@@ -17,10 +17,10 @@ using static MainMenuSceneBuilder;
 /// </summary>
 public static partial class FishingSceneBuilder
 {
-    const int Day3BeachBuilderVersion = 3;
+    const int Day3BeachBuilderVersion = 4;
     const string Day3BeachScenePath = "Assets/Scenes/Day3Beach.unity";
     const string Day3BeachDir = "Assets/Sprites/Day3Beach/";
-    const string Day3BeachAutoBuildKey = "Tideworks.Day3BeachAutoBuild.v3";
+    const string Day3BeachAutoBuildKey = "Tideworks.Day3BeachAutoBuild.v4";
     static string Day3BeachVersionKey => "Tideworks.Day3BeachBuilderVersion." + PlayerSettings.productGUID;
 
     static void RequestDay3Beach()
@@ -78,6 +78,23 @@ public static partial class FishingSceneBuilder
         // Gece: ayni sahnenin gece hali ustune yavasca gelir
         var night = Img(beach, "Night", Day3BeachDir, "NightBackground", new Rect(0, 0, Art.x, Art.y));
         night.color = new Color(1f, 1f, 1f, 0f);
+        var moon = Img(beach, "Moon", Day2BeachDir, "Moon", new Rect(860, 20, 230, 230)).rectTransform;
+        Vector2[] starAt = { new Vector2(760, 70), new Vector2(1120, 40), new Vector2(1480, 90), new Vector2(1700, 190), new Vector2(980, 250),
+                             new Vector2(420, 220), new Vector2(240, 250), new Vector2(1250, 150), new Vector2(1420, 230), new Vector2(620, 160) };
+        var stars = starAt.Select((p, i) => Img(beach, "Star" + i, CoinPath, "Sparkle", new Rect(p.x - 22, p.y - 22, 44, 44))).ToArray();
+
+        // Kafe isik dizisi: Hatice Teyze radyodan seslenince tek tek soner
+        var lightString = Img(beach, "CafeLights", Day3BeachDir, "LightString", new Rect(0, 660, 740, 200));
+        var cafeBulbs = new Image[8];
+        var cafeGlows = new Image[8];
+        for (int i = 0; i < 8; i++)
+        {
+            float t = (i + 1) / 9f;
+            float x = 30 + 670 * t, y = 690 + 240 * t * (1 - t);
+            cafeGlows[i] = Img(beach, "CafeGlow" + i, BeachDir, "LampGlow", new Rect(x - 60, y - 38, 120, 120));
+            cafeGlows[i].color = new Color(1f, 0.78f, 0.4f, 0.65f);
+            cafeBulbs[i] = Img(beach, "CafeBulb" + i, Day3BeachDir, "Bulb", new Rect(x - 18, y - 4, 36, 48));
+        }
 
         // Sokak lambasi ve amber isik
         var lampGlow = Img(beach, "LampGlow", BeachDir, "LampGlow", new Rect(1374, 232, 520, 520));
@@ -101,14 +118,33 @@ public static partial class FishingSceneBuilder
         // Bayrakli yuvalar (gece rengi koyulasir) ve yavrular
         Vector2[] nestAt = { new Vector2(376, 868), new Vector2(796, 948), new Vector2(1176, 848) };
         var nests = nestAt.Select((p, i) => Img(beach, "Nest" + i, Day3BeachDir, "NestFlag", new Rect(p.x, p.y, 288, 144))).ToArray();
-        var hatchLayer = new GameObject("Hatchlings", typeof(RectTransform)).transform as RectTransform;
-        hatchLayer.SetParent(beach, false);
-        Place(hatchLayer, new Rect(0, 0, Art.x, Art.y));
+        // Elif'in dolduracagi cukurlar ve Mert'in toplayacagi kucuk copler (gece belirir)
+        Vector2[] holeAt = { new Vector2(560, 830), new Vector2(930, 700), new Vector2(1260, 720) };
+        var holes = holeAt.Select((p, i) => Img(beach, "Hole" + i, Day3BeachDir, "SandHole", new Rect(p.x - 80, p.y - 35, 160, 70))).ToArray();
+        var mertTrash = new[]
+        {
+            Img(beach, "MertTrash0", ArtDir, "TrashBottleCap", new Rect(1734, 676, 52, 52)),
+            Img(beach, "MertTrash1", ArtDir, "TrashStraw", new Rect(1560, 700, 100, 32)),
+        };
+        foreach (var m in mertTrash) m.preserveAspect = true;
+        RectTransform Layer(string name)
+        {
+            var layer = new GameObject(name, typeof(RectTransform)).transform as RectTransform;
+            layer.SetParent(beach, false);
+            Place(layer, new Rect(0, 0, Art.x, Art.y));
+            return layer;
+        }
+        var trackLayer = Layer("Tracks");
+        var track = Img(trackLayer, "TrackTemplate", Day3BeachDir, "Track", new Rect(0, 0, 14, 10));
+        var hatchLayer = Layer("Hatchlings");
         var hatchling = Img(hatchLayer, "HatchlingTemplate", Day2BeachDir, "CarettaBaby", new Rect(0, 0, 42, 40));
+        var splash = Img(hatchLayer, "SplashTemplate", UiDir, "Splash", new Rect(0, 0, 90, 90));
+        var sparkle = Img(hatchLayer, "SparkleTemplate", CoinPath, "Sparkle", new Rect(0, 0, 64, 64));
+        var flipRing = Img(hatchLayer, "RingTemplate", Day3BeachDir, "PickRing", new Rect(0, 0, 110, 110));
 
         // Kiyiya vuran 2 poset ve 1 ag parcasi (sari halkalariyla)
         string[] shoreSprites = { "TrashPlasticBag", "TrashPlasticBag", "TrashGhostNet" };
-        Vector2[] shoreAt = { new Vector2(722, 800), new Vector2(1120, 840), new Vector2(1440, 784) };
+        Vector2[] shoreAt = { new Vector2(760, 780), new Vector2(1120, 840), new Vector2(1440, 784) };
         var shore = new Button[3];
         for (int i = 0; i < 3; i++)
         {
@@ -402,6 +438,14 @@ public static partial class FishingSceneBuilder
         SetArray(ctl, "helperPillTicks", pillTicks);
         SetArray(ctl, "nests", nests);
         SetArray(ctl, "shoreTrash", shore);
+        SetRefs(ctl, ("lightString", lightString), ("moon", moon), ("holeFilled", LoadSprite("SandHoleFilled", Day3BeachDir)),
+            ("trackLayer", trackLayer), ("trackTemplate", track), ("splashTemplate", splash), ("sparkleTemplate", sparkle),
+            ("ringTemplate", flipRing));
+        SetArray(ctl, "cafeBulbs", cafeBulbs);
+        SetArray(ctl, "cafeGlows", cafeGlows);
+        SetArray(ctl, "stars", stars);
+        SetArray(ctl, "holes", holes);
+        SetArray(ctl, "mertTrash", mertTrash);
 
         Directory.CreateDirectory(Path.GetDirectoryName(Day3BeachScenePath));
         ArtLocalization.Apply(canvasGo.transform);

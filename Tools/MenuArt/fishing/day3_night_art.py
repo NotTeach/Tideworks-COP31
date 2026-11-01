@@ -4,7 +4,7 @@ Uretir (Sprites/Day3Beach):
 - Day3BeachBackground/Backdrop (gun batimi: gokyuzu, gunes ve yansimalari, deniz, kopuk, kum), NightBackground (ayni sahne gece)
 - StreetLamp, NestFlag (bayrakli yuva), Hatice, Elif (Pamuk'la), Mert (pusula ve kepceyle; 34.png'den kesilir), CharShadow
 - TaskPanel, CheckBox, CheckBoxOn, DialogBox, DialogButton, DialogButtonWide, JobsPanel, JobChip, JobChipSelected, TagPill,
-  HelperPill, NamePill, PickRing, NotebookCard, SeasonCard"""
+  HelperPill, NamePill, PickRing, NotebookCard, SeasonCard, LightString, Bulb, SandHole, SandHoleFilled, Track"""
 import sys, os, math
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
@@ -239,3 +239,32 @@ d.rounded_rectangle([P(0, 0), P(1264, 808)], radius=44 * S, fill=(62, 42, 30, 25
 d.rounded_rectangle([P(9, 9), P(1255, 799)], radius=36 * S, fill=(231, 201, 148, 255))
 save(im, "SeasonCard", 1270, 822)
 print("ok")
+
+# ================= Canlandirma: kafe isik dizisi, ampul, kum cukuru, yavru izi =================
+# Isik dizisi: iki direk (x 30 ve 700, tepe y 690, dip y 850) arasinda sarkan tel; sprite artboard'da (0, 660, 740, 200)
+im, d, P = canvas(740, 200)
+WOOD, WOOD_D = (138, 96, 62, 255), (70, 46, 30, 255)
+for x in (30, 700):
+    d.rounded_rectangle([P(x - 9, 24), P(x + 9, 192)], radius=4 * S, fill=WOOD_D)
+    d.rounded_rectangle([P(x - 6, 27), P(x + 6, 189)], radius=3 * S, fill=WOOD)
+pts = [P(30 + 670 * t / 60, 30 + 60 * 4 * (t / 60) * (1 - t / 60)) for t in range(61)]
+d.line(pts, fill=(52, 40, 32, 255), width=3 * S, joint="curve")
+save(im, "LightString", 740, 200)
+im, d, P = canvas(36, 48)
+d.rounded_rectangle([P(11, 0), P(25, 12)], radius=3 * S, fill=(52, 40, 32, 255))
+d.ellipse([P(4, 8), P(32, 46)], fill=(52, 40, 32, 255))
+d.ellipse([P(7, 11), P(29, 43)], fill=(255, 255, 255, 255))      # renk Unity'de (acik: sicak sari, kapali: gri)
+save(im, "Bulb", 36, 48)
+im, d, P = canvas(160, 70)
+d.ellipse([P(0, 0), P(160, 70)], fill=(214, 190, 146, 255))
+d.ellipse([P(14, 10), P(146, 62)], fill=(176, 150, 108, 255))
+d.ellipse([P(30, 22), P(130, 60)], fill=(150, 126, 90, 255))
+save(im, "SandHole", 160, 70)
+im, d, P = canvas(160, 70)
+d.ellipse([P(4, 14), P(156, 66)], fill=(220, 196, 150, 255))
+d.chord([P(20, 4), P(140, 64)], 180, 360, fill=(238, 218, 176, 255))
+save(im, "SandHoleFilled", 160, 70)
+im, d, P = canvas(14, 10)
+d.ellipse([P(0, 0), P(14, 10)], fill=(40, 36, 32, 255))
+save(im, "Track", 14, 10)
+print("canlandirma ok")
