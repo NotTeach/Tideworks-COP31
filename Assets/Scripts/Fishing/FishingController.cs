@@ -338,8 +338,9 @@ public partial class FishingController : MonoBehaviour
         {
             if (kb.upArrowKey.isPressed || kb.wKey.isPressed) throttle += 1f;
             if (kb.downArrowKey.isPressed || kb.sKey.isPressed) throttle -= 1f;
-            if (kb.leftArrowKey.isPressed || kb.aKey.isPressed) steer -= 1f;
-            if (kb.rightArrowKey.isPressed || kb.dKey.isPressed) steer += 1f;
+            // heading artinca tekne sola (saat yonunun tersine) doner
+            if (kb.leftArrowKey.isPressed || kb.aKey.isPressed) steer += 1f;
+            if (kb.rightArrowKey.isPressed || kb.dKey.isPressed) steer -= 1f;
         }
 
         // Joystick / gamepad: cubugun gosterdigi yone don ve oraya kurek cek
