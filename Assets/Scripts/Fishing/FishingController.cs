@@ -14,6 +14,7 @@ using UnityEngine.UI;
 /// Telefon: joystick ile kurek cek, olta butonuyla at. Adalara ve kumsala carpinca tekne geri seker.
 /// Butun copler toplaninca ayristirma sahnesi (Recycling), ardindan kumsal (Beach) gelir.
 /// Dukkan aletleri (buyuk ag, saglam olta, gunes motoru) ve 2. gunun firtinasi: FishingController.Storm.cs.
+/// 3. gunun kayalik havuzlari ve gizli koyu: FishingController.Cove.cs.
 /// Konumlar artboard pikselidir: x saga, y asagi, sol ust kose (0,0).
 /// </summary>
 public partial class FishingController : MonoBehaviour
@@ -126,7 +127,7 @@ public partial class FishingController : MonoBehaviour
     readonly List<Wave> waves = new List<Wave>();
     float wakeTimer;
 
-    bool Paused => (howTo && howTo.activeSelf) || ShopPanel.IsOpen || PromptOpen;
+    bool Paused => (howTo && howTo.activeSelf) || ShopPanel.IsOpen || PromptOpen || coveBusy || OnFootPage;
 
     static bool IsMobile => Application.isMobilePlatform || Touchscreen.current != null;
 
@@ -153,12 +154,13 @@ public partial class FishingController : MonoBehaviour
                                           : "Row with the arrow keys. Press E or tap trash to cast your rod.");
         SetupGear();
         SetupStorm();
+        SetupCove();
         boatPos = boatStart;
         PlaceBoat();
         SpawnWaves();
         SetupEcology();
         Spawn();
-        OpenHowTo();
+        if (!cove) OpenHowTo();                 // 3. gun Mert'in sozuyle baslar
         RefreshHud();
         TwSes.EkranGecisi(Ses.MuzikAkdeniz, Ses.AmbiyansDeniz);
         TwSes.TekneMotoru(true);
@@ -314,6 +316,7 @@ public partial class FishingController : MonoBehaviour
         LeaveWake(dt);
         PlaceBoat();
         UpdateNetAim();
+        UpdateCove();
 
         var kb = Keyboard.current;
         bool cast = kb != null && (kb.eKey.wasPressedThisFrame || kb.spaceKey.wasPressedThisFrame);
@@ -414,9 +417,10 @@ public partial class FishingController : MonoBehaviour
 
     bool Blocked(Vector2 p, float r, bool hud = true)
     {
+        if (cove) return OpenSeaBlocked(p, r, hud);
         if (p.x - r < ShoreX(p.y) + 12f) return true;
         if (hud && (p.x + r > playArea.x || p.y - r < hudTop || p.y + r > playArea.y - hudBottom + 40f)) return true;
-        foreach (var isl in islands)
+        foreach (var isl in Rocks)
         {
             float dx = (p.x - isl.x) / (isl.z + r * 0.85f), dy = (p.y - isl.y) / (isl.w + r * 0.85f);
             if (dx * dx + dy * dy < 1f) return true;
@@ -581,9 +585,9 @@ public partial class FishingController : MonoBehaviour
         healthFill.sizeDelta = new Vector2(Mathf.Max(18f, healthWidth * health), healthFill.sizeDelta.y);
         healthFill.gameObject.SetActive(health > 0f);
         healthText.text = Mathf.RoundToInt(health * 100f) + "%";
-        taskText.text = storm ? Loc.F("{0} / {1} ghost nets", ghostCollected, GhostNets)
+        taskText.text = cove ? CoveTask() : storm ? Loc.F("{0} / {1} ghost nets", ghostCollected, GhostNets)
                               : Loc.F("{0} / {1} trash fished out", bag.Count, TrashTotal);
-        fishText.text = storm ? FishCount.ToString() : (fishBefore + fishShown) + "/" + fishSprites.Length;
+        fishText.text = cove ? Loc.F("{0} fish", FishCount) : storm ? FishCount.ToString() : (fishBefore + fishShown) + "/" + fishSprites.Length;
         RefreshStorm();
         bagCount.text = Loc.F("{0} items", bag.Count);
         for (int i = 0; i < bagIcons.Length; i++)
@@ -595,7 +599,7 @@ public partial class FishingController : MonoBehaviour
             if (on && item >= 0) bagIcons[i].sprite = trashSprites[item];
         }
         var c = murk.color; c.a = murkAlpha * (1f - health); murk.color = c;
-        sortButton.interactable = Remaining == 0;
+        sortButton.interactable = !cove && Remaining == 0;
     }
 
     void ShowFloating(string text, Vector2 at, Color color)
@@ -754,8 +758,9 @@ public partial class FishingController : MonoBehaviour
         // Gunun sonucu kaydedilir: saglik hedefe ulasti, donen baliklar ekosisteme katildi
         GameProgress.OceanHealth = Mathf.RoundToInt(CurrentHealth);
         // Firtina gununde kiyiya vuran copler yuzunden esik kalsa da gunun turleri geri doner
-        GameProgress.FishReturned = fishBefore + (storm ? fishToday : fishShown);
+        GameProgress.FishReturned = fishBefore + (storm || cove ? fishToday : fishShown);
         CatchBag.Items = new List<int>(bag);
+        GameProgress.TrashCollected += bag.Count;
         GameSettings.Save();
         yield return Load(recyclingSceneName);
     }

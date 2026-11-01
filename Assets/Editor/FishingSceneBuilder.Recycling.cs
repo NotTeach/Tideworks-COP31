@@ -16,9 +16,9 @@ using static MainMenuSceneBuilder;
 /// </summary>
 public static partial class FishingSceneBuilder
 {
-    const int RecyclingBuilderVersion = 1;
+    const int RecyclingBuilderVersion = 3;
     const string RecyclingScenePath = "Assets/Scenes/Recycling.unity";
-    const string RecyclingAutoBuildKey = "Tideworks.RecyclingAutoBuild.v1";
+    const string RecyclingAutoBuildKey = "Tideworks.RecyclingAutoBuild.v3";
     static string RecyclingVersionKey => "Tideworks.RecyclingBuilderVersion." + PlayerSettings.productGUID;
 
     [MenuItem("Tideworks/Rebuild Recycling Scene")]

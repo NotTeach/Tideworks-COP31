@@ -13,6 +13,7 @@ public static class PlayerWallet
     public static void Add(int amount)
     {
         if (amount == 0) return;
+        if (amount > 0) GameProgress.CoinsEarned += amount;
         GameProgress.Coins = Coins + amount;
         OnChanged?.Invoke(Coins);
     }
