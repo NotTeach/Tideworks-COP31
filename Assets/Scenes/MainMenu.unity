@@ -973,7 +973,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MainMenuController
   introSceneName: Intro
-  gameSceneName: SampleScene
+  gameSceneName: Workshop
   mainPage: {fileID: 1156241355}
   howToPlayPage: {fileID: 1524951337}
   settingsPage: {fileID: 799806315}

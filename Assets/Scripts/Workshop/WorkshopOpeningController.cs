@@ -41,6 +41,18 @@ public class WorkshopOpeningController : MonoBehaviour
     [Tooltip("Anahtar sprite'inda ucun yeri (pivot)")]
     [SerializeField] Vector2 keyTipPivot = new Vector2(0.47f, 0.05f);
 
+    [Header("Gune gore dis cephe (2. gun ve sonrasi)")]
+    [Tooltip("Kapi acilinca 2. gun ve sonrasi bu sahneye gecer (gun plani ve Hatice Teyze sadece 1. gun)")]
+    [SerializeField] string laterDaysAfterDoor = "Fishing";
+    [SerializeField] LocalizedImage exteriorBackground;
+    [SerializeField] Sprite day2Background;
+    [SerializeField] Sprite day2BackgroundTr;
+    [SerializeField] GameObject[] trashHiddenOnDay2;
+    [SerializeField] GameObject shop;
+    [SerializeField] Text toast;
+    [SerializeField] RectTransform sign;
+    [SerializeField] Text signText;
+
     [Header("2 - Gun plani")]
     [SerializeField] RectTransform firstCheck;
     [SerializeField] RectTransform doneBadge;
@@ -97,12 +109,12 @@ public class WorkshopOpeningController : MonoBehaviour
 
     static readonly string[,] Quest =
     {
-        { "DAY 1 · MORNING · STEP 1 OF 3", "Find the key", "The key is above the door, just like Grandpa wrote." },
-        { "DAY 1 · MORNING · STEP 2 OF 3", "Unlock the door", "Grandpa's old key still fits the lock." },
-        { "DAY 1 · MORNING · STEP 3 OF 3", "Step inside", "The workshop is open again!" },
+        { "Find the key", "The key is above the door, just like Grandpa wrote." },
+        { "Unlock the door", "Grandpa's old key still fits the lock." },
+        { "Step inside", "The workshop is open again!" },
     };
 
-    int tasksDone = 1, line;
+    int tasksDone = 1, line, day = 1;
     bool busy, panelOpen, metHatice, radioFixed;
     Vector2 panelShown;
     Coroutine typing, panelMove;
@@ -111,7 +123,7 @@ public class WorkshopOpeningController : MonoBehaviour
     void Awake()
     {
         // Sahne bu scriptten eski bir kurucu surumuyle kurulduysa bazi alanlar bos kalir: cokmek yerine ne yapilacagini soyle
-        if (!coinCounter || !nextButton || !rewardOverlay || !missionOverlay || !counterPillTo || !repair)
+        if (!coinCounter || !nextButton || !rewardOverlay || !missionOverlay || !counterPillTo || !repair || !signText)
         {
             Debug.LogError("[Tideworks] Workshop sahnesi eski. Unity menusu > Tideworks > Rebuild Workshop Scene ile yeniden kurun.", this);
             enabled = false;
@@ -132,6 +144,8 @@ public class WorkshopOpeningController : MonoBehaviour
     {
         Time.timeScale = 1f;
         ShowOnly(exteriorPage);
+        day = GameProgress.CurrentDay;
+        SetupDay();
         SetQuest(0);
         TwSes.Ambiyans(Ses.AmbiyansDeniz);
 
@@ -219,12 +233,65 @@ public class WorkshopOpeningController : MonoBehaviour
             doorLeft.localScale = new Vector3(sx, 1f, 1f);
             doorRight.localScale = new Vector3(sx, 1f, 1f);
         });
+        yield return FlipSign();
         SetQuest(2);
         yield return Wait(1.1f);
 
+        if (day >= 2)
+        {
+            // Gun plani ve Hatice Teyze'nin ziyareti 1. gune ozel: sonraki gunler denize acilir
+            StartCoroutine(LoadAfterFade(laterDaysAfterDoor));
+            yield break;
+        }
         yield return SwitchPage(dayPlanPage);
         busy = false;
         StartCoroutine(MarkWorkshopOpen());
+    }
+
+    /// <summary>
+    /// Gune gore dis cephe: 2. gunden itibaren kumsal daha temiz (daha az cop, daha berrak deniz),
+    /// yaliya iki ev yapilmis ve magaza acilmis. Tabela kapi acilana kadar CLOSED.
+    /// </summary>
+    void SetupDay()
+    {
+        bool later = day >= 2;
+        if (later && exteriorBackground && day2Background) exteriorBackground.SetSprites(day2Background, day2BackgroundTr);
+        foreach (var t in trashHiddenOnDay2) if (t) t.SetActive(!later);
+        if (shop) shop.SetActive(later);
+        if (toast) toast.gameObject.SetActive(false);
+        SetSign(false);
+    }
+
+    void SetSign(bool open)
+    {
+        signText.text = Loc.T(open ? "OPEN" : "CLOSED");
+        signText.color = open ? new Color32(60, 140, 90, 255) : new Color32(196, 64, 48, 255);
+    }
+
+    /// <summary>Kapi acilinca tabela doner: CLOSED -> OPEN.</summary>
+    IEnumerator FlipSign()
+    {
+        TwSes.Efekt(Ses.Tik, 0.7f);
+        yield return Tween(0.18f, t => sign.localScale = new Vector3(1f - t, 1f, 1f));
+        SetSign(true);
+        yield return Tween(0.22f, t => sign.localScale = new Vector3(EaseOutBack(t), 1f, 1f));
+    }
+
+    /// <summary>Magaza binasina tiklaninca.</summary>
+    public void OpenShop()
+    {
+        if (!toast) return;
+        StopCoroutine(nameof(ShowToast));
+        StartCoroutine(nameof(ShowToast), Loc.T("The shop opens soon! Keep saving your coins."));
+    }
+
+    IEnumerator ShowToast(string text)
+    {
+        toast.text = text;
+        toast.gameObject.SetActive(true);
+        TwSes.Efekt(Ses.Pop, 0.7f);
+        yield return Tween(2.6f, t => SetAlpha(toast, t < 0.8f ? 1f : (1f - t) / 0.2f));
+        toast.gameObject.SetActive(false);
     }
 
     // ---------------- 2: gun plani ----------------
@@ -598,9 +665,9 @@ public class WorkshopOpeningController : MonoBehaviour
 
     void SetQuest(int step)
     {
-        questStep.text = Loc.T(Quest[step, 0]);
-        questTitle.text = Loc.T(Quest[step, 1]);
-        questBody.text = Loc.T(Quest[step, 2]);
+        questStep.text = Loc.F("DAY {0} · MORNING · STEP {1} OF 3", day, step + 1);
+        questTitle.text = Loc.T(Quest[step, 0]);
+        questBody.text = Loc.T(day >= 2 && step == 0 ? "The key is above the door, right where you left it." : Quest[step, 1]);
     }
 
     void ShowOnly(CanvasGroup page)

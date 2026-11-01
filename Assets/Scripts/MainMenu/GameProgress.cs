@@ -35,11 +35,30 @@ public static class GameProgress
         set => PlayerPrefs.SetInt(NestsKey, Mathf.Clamp(value, 0, TotalNests));
     }
 
+    const string HealthKey = "progress.oceanHealth";
+    const string FishKey = "progress.fishReturned";
+
+    /// <summary>Okyanus sagligi (yuzde): 1. gun 0'dan baslar, her temizlik gunu ~35 artar.</summary>
+    public static int OceanHealth
+    {
+        get => Mathf.Clamp(PlayerPrefs.GetInt(HealthKey, 0), 0, 100);
+        set => PlayerPrefs.SetInt(HealthKey, Mathf.Clamp(value, 0, 100));
+    }
+
+    /// <summary>Temiz suya geri donen balik turu sayisi (TrashCatalog.FishReturnOrder sirasiyla).</summary>
+    public static int FishReturned
+    {
+        get => Mathf.Clamp(PlayerPrefs.GetInt(FishKey, 0), 0, TrashCatalog.FishSprites.Length);
+        set => PlayerPrefs.SetInt(FishKey, Mathf.Clamp(value, 0, TrashCatalog.FishSprites.Length));
+    }
+
     public static void NewGame()
     {
         PlayerPrefs.SetInt(DayKey, 1);
         PlayerPrefs.SetInt(CoinsKey, StartCoins);
         PlayerPrefs.SetInt(NestsKey, 0);
+        PlayerPrefs.SetInt(HealthKey, 0);
+        PlayerPrefs.SetInt(FishKey, 0);
         PlayerPrefs.Save();
     }
 
@@ -54,6 +73,8 @@ public static class GameProgress
         PlayerPrefs.DeleteKey(DayKey);
         PlayerPrefs.DeleteKey(CoinsKey);
         PlayerPrefs.DeleteKey(NestsKey);
+        PlayerPrefs.DeleteKey(HealthKey);
+        PlayerPrefs.DeleteKey(FishKey);
         PlayerPrefs.Save();
     }
 }

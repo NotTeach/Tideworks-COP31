@@ -13,6 +13,7 @@ using static MainMenuSceneBuilder;
 /// <summary>
 /// Denize acilis sahnesini (Assets/Scenes/Fishing.unity) kodla kurar:
 /// Gorev 1 - tekneyle oltayla cop ve balik toplama, Gorev 2 - copleri dogru kutulara ayirma.
+/// Gorev 2 (ayristirma) ayri sahnedir: Assets/Scenes/Recycling.unity (FishingSceneBuilder.Recycling.cs).
 /// Gorev 3 (carettalara yardim) ayri sahnedir: Assets/Scenes/Beach.unity (FishingSceneBuilder.Beach.cs).
 /// Oyun gorselleri: Assets/Art/Fishing (Tools/MenuArt/fishing/cut_assets.py),
 /// arayuz ve zeminler: Assets/Sprites/Fishing (Tools/MenuArt/fishing/fishing_ui.py).
@@ -22,14 +23,14 @@ using static MainMenuSceneBuilder;
 [InitializeOnLoad]
 public static partial class FishingSceneBuilder
 {
-    const int BuilderVersion = 6;
+    const int BuilderVersion = 7;
     const string ScenePath = "Assets/Scenes/Fishing.unity";
     const string ArtDir = "Assets/Art/Fishing/";
     const string UiDir = "Assets/Sprites/Fishing/";
     const string BeachDir = "Assets/Sprites/Beach/";
     const string CoinPath = "Assets/Sprites/Workshop/";
     const string FontDir = "Assets/Fonts/";
-    const string AutoBuildKey = "Tideworks.FishingAutoBuild.v6";
+    const string AutoBuildKey = "Tideworks.FishingAutoBuild.v7";
     static string VersionKey => "Tideworks.FishingBuilderVersion." + PlayerSettings.productGUID;
 
     static readonly Vector2 Art = new Vector2(2560, 1440);
@@ -44,8 +45,15 @@ public static partial class FishingSceneBuilder
     static FishingSceneBuilder()
     {
         RequestBeach();
+        RequestRecycling();
         if (File.Exists(ScenePath) && EditorPrefs.GetInt(VersionKey, 0) >= BuilderVersion) return;
         SceneAutoBuild.Request(AutoBuildKey, () => Build(askToSave: true));
+    }
+
+    static void RequestRecycling()
+    {
+        if (File.Exists(RecyclingScenePath) && EditorPrefs.GetInt(RecyclingVersionKey, 0) >= RecyclingBuilderVersion) return;
+        SceneAutoBuild.Request(RecyclingAutoBuildKey, () => BuildRecycling(askToSave: true));
     }
 
     static void RequestBeach()
@@ -152,7 +160,7 @@ public static partial class FishingSceneBuilder
         tipLine.resizeTextForBestFit = true;
         tipLine.resizeTextMaxSize = 32;
         tipLine.resizeTextMinSize = 20;
-        Label(tip.transform, "Rewards", "<color=#B4472A>Trash +5</color> and a healthier ocean · <color=#17777A>Fish +10</color>",
+        Label(tip.transform, "Rewards", "<color=#B4472A>Trash +5</color> and a healthier ocean · <color=#17777A>fish return to clean water</color>",
             fontBody, 28, Brown, new Rect(32, 78, 716, 44));
 
         // Alt bar
@@ -216,7 +224,7 @@ public static partial class FishingSceneBuilder
         var space = Img(hr, "Space", UiDir, "KeyCapWide", new Rect(170, 20, 230, 84));
         Label(space.transform, "Text", "Space", fontTitle, 36, Ink, new Rect(0, -6, 230, 84), TextAnchor.MiddleCenter);
         Label(hr, "Text", "Cast your rod", fontTitle, 44, Ink, new Rect(430, 12, 790, 60));
-        Label(hr, "Sub", "or click on trash or a fish that is close enough", fontBody, 28, Brown, new Rect(430, 70, 790, 40));
+        Label(hr, "Sub", "or click on trash that is close enough", fontBody, 28, Brown, new Rect(430, 70, 790, 40));
         CommonRows(desktop);
 
         var mobileRows = Group(howCard.transform, "MobileRows");
@@ -228,105 +236,13 @@ public static partial class FishingSceneBuilder
         var rodIcon = Img(hr, "Rod", UiDir, "RodButton", new Rect(30, 6, 116, 116));
         Img(rodIcon.transform, "Icon", ArtDir, "Rod", new Rect(18, 18, 80, 80));
         Label(hr, "Text", "Tap the rod button to cast", fontTitle, 44, Ink, new Rect(190, 12, 1030, 60));
-        Label(hr, "Sub", "or tap on trash or a fish that is close enough", fontBody, 28, Brown, new Rect(190, 70, 1030, 40));
+        Label(hr, "Sub", "or tap on trash that is close enough", fontBody, 28, Brown, new Rect(190, 70, 1030, 40));
         CommonRows(mobileRows);
 
         var go = Img(howCard.transform, "Go", UiDir, "GoButton", new Rect(470, 826, 460, 124));
         Label(go.transform, "Text", "Let's go!", fontTitle, 54, Color.white, new Rect(0, -6, 460, 124), TextAnchor.MiddleCenter);
         Clickable(go, c.CloseHowTo);
         howTo.gameObject.SetActive(false);
-
-        // ================= Gorev 2: ayristirma =================
-        var sortPage = Page(canvasGo.transform, "SortPage", "Sort", out var yard);
-        var sorter = sortPage.gameObject.AddComponent<SortController>();
-        Img(yard, "TopBar", UiDir, "TopBar", new Rect(0, 0, 2560, 150));
-        var yMenu = Img(yard, "MenuButton", UiDir, "HudTeal", new Rect(40, 20, 110, 110));
-        Img(yMenu.transform, "Icon", UiDir, "IconWaves", new Rect(23, 23, 64, 64));
-        Clickable(yMenu, c.BackToMenu);
-        Label(yard, "Brand", "Tidework", fontTitle, 56, Gold, new Rect(176, 14, 400, 70));
-        Label(yard, "Place", "Recycling yard · Day 1", fontHeavy, 28, Color.white, new Rect(176, 84, 520, 40));
-        var taskPill = Img(yard, "TaskPill", UiDir, "TaskPill", new Rect(1020, 27, 520, 96));
-        Label(taskPill.transform, "Text", "Task 2 · Sort the catch", fontTitle, 38, Color.white, new Rect(0, 0, 520, 96), TextAnchor.MiddleCenter);
-        Img(yard, "Track", UiDir, "BarTrack", new Rect(1880, 66, 300, 18));
-        Img(yard, "Fill", UiDir, "BarFill", new Rect(1880, 66, 300, 18));
-        Label(yard, "Health", "100%", fontTitle, 36, Color.white, new Rect(2190, 50, 110, 50));
-        var yCoins = Img(yard, "Coins", UiDir, "HudDark220", new Rect(2300, 25, 230, 100));
-        Img(yCoins.transform, "Coin", CoinPath, "Coin", new Rect(22, 20, 60, 60));
-        var yCoinText = Label(yCoins.transform, "Count", "0", fontTitle, 48, Color.white, new Rect(96, 2, 130, 100));
-
-        var bins = Img(yard, "Bins", UiDir, "BinsPanel", new Rect(60, 190, 680, 1170));
-        Label(bins.transform, "Title", "Recycling bins", fontHand, 70, Ink, new Rect(40, 16, 600, 96));
-        var binRows = new Image[5];
-        var binCounts = new Text[5];
-        string[] binIcons = { "BinMetal", "BinGlass", "BinPaper", "BinPlastic", "BinHousehold" };
-        for (int i = 0; i < 5; i++)
-        {
-            var row = binRows[i] = Img(bins.transform, "Bin" + i, UiDir, "BinRow", new Rect(40, 122 + i * 204, 600, 186));
-            row.raycastTarget = true;
-            var b = row.gameObject.AddComponent<Button>();
-            var bc = b.colors;
-            bc.highlightedColor = new Color(0.95f, 0.95f, 0.92f, 1f);
-            bc.pressedColor = new Color(0.85f, 0.85f, 0.85f, 1f);
-            b.colors = bc;
-            row.gameObject.AddComponent<MenuButtonFx>().hoverScale = 1.03f;
-            UnityEventTools.AddIntPersistentListener(b.onClick, sorter.Choose, i);
-            Img(row.transform, "Icon", UiDir, binIcons[i], new Rect(24, 28, 110, 130));
-            var name = Label(row.transform, "Name", TrashCatalog.BinNames[i], fontTitle, 46, Ink, new Rect(150, 30, 340, 64));
-            name.resizeTextForBestFit = true;
-            name.resizeTextMaxSize = 46;
-            name.resizeTextMinSize = 28;
-            name.horizontalOverflow = HorizontalWrapMode.Wrap;
-            Label(row.transform, "Hint", TrashCatalog.BinHints[i], fontBody, 26, Brown, new Rect(150, 98, 360, 44));
-            var count = Img(row.transform, "Count", UiDir, binIcons[i] + "Count", new Rect(504, 61, 64, 64));
-            binCounts[i] = Label(count.transform, "Text", "0", fontTitle, 32, Color.white, new Rect(0, 0, 64, 64), TextAnchor.MiddleCenter);
-        }
-
-        var itemIndex = Label(yard, "ItemIndex", "", fontHeavy, 34, new Color32(30, 120, 124, 255), new Rect(780, 184, 1000, 50), TextAnchor.MiddleCenter);
-        var itemName = Label(yard, "ItemName", "", fontTitle, 84, Ink, new Rect(780, 232, 1000, 110), TextAnchor.MiddleCenter);
-        var question = Label(yard, "Question", "", fontBody, 36, Brown, new Rect(780, 346, 1000, 56), TextAnchor.MiddleCenter);
-        Img(yard, "Plate", UiDir, "ItemPlate", new Rect(980, 420, 600, 600));
-        var itemImage = Img(yard, "Item", ArtDir, "TrashWaterBottle", new Rect(1120, 640, 320, 120));
-        itemImage.preserveAspect = true;
-
-        var score = Img(yard, "Score", UiDir, "ScoreCard", new Rect(1890, 190, 610, 300));
-        Label(score.transform, "Title", "SCORE", fontHeavy, 26, SoftTeal, new Rect(34, 18, 300, 40));
-        var rightBox = Img(score.transform, "Right", UiDir, "ScoreRight", new Rect(34, 66, 262, 150));
-        Label(rightBox.transform, "Label", "Right · +3", fontHeavy, 26, Color.white, new Rect(20, 12, 230, 40));
-        var rightCount = Label(rightBox.transform, "Count", "0", fontTitle, 60, Color.white, new Rect(20, 56, 230, 80));
-        var wrongBox = Img(score.transform, "Wrong", UiDir, "ScoreWrong", new Rect(314, 66, 262, 150));
-        Label(wrongBox.transform, "Label", "Wrong · -2", fontHeavy, 26, Color.white, new Rect(20, 12, 230, 40));
-        var wrongCount = Label(wrongBox.transform, "Count", "0", fontTitle, 60, Color.white, new Rect(20, 56, 230, 80));
-        var soFar = Label(score.transform, "SoFar", "", fontTitle, 40, Gold, new Rect(34, 228, 540, 56));
-
-        var bagPanel = Img(yard, "BagPanel", UiDir, "BagPanel", new Rect(1890, 520, 610, 790));
-        var bagTitle = Label(bagPanel.transform, "Title", "", fontHeavy, 26, Brown, new Rect(30, 20, 550, 44));
-        var tiles = new Image[15];
-        for (int i = 0; i < tiles.Length; i++)
-        {
-            var tile = tiles[i] = Img(bagPanel.transform, "Tile" + i, UiDir, "BagTile", new Rect(30 + (i % 3) * 186, 78 + (i / 3) * 136, 160, 110));
-            var ic = Img(tile.transform, "Icon", ArtDir, "TrashTinCan", new Rect(14, 10, 132, 90));
-            ic.preserveAspect = true;
-        }
-        var sortFloat = Label(yard, "FloatingText", "", fontTitle, 72, Color.white, new Rect(0, 0, 300, 100), TextAnchor.MiddleCenter);
-
-        // Sonuc karti
-        var finish = MakeImage(yard, "FinishOverlay", null);
-        finish.color = new Color(0.02f, 0.08f, 0.1f, 0.6f);
-        finish.raycastTarget = true;
-        Place(finish.rectTransform, new Rect(-400, -400, Art.x + 800, Art.y + 800));
-        var card = Img(finish.transform, "Card", UiDir, "FinishCard", new Rect(400 + 730, 400 + 340, 1100, 760));
-        Label(card.transform, "Title", "All sorted!", fontTitle, 100, Ink, new Rect(0, 50, 1100, 130), TextAnchor.MiddleCenter);
-        var finishCoins = Label(card.transform, "Coins", "", fontTitle, 72, new Color32(200, 140, 30, 255), new Rect(0, 190, 1100, 100), TextAnchor.MiddleCenter);
-        var finishScore = Label(card.transform, "Score", "", fontHeavy, 42, Brown, new Rect(0, 300, 1100, 60), TextAnchor.MiddleCenter);
-        var thanks = Label(card.transform, "Thanks", "The beach is cleaner. The turtles thank you!", fontHand, 60,
-            new Color32(110, 62, 40, 255), new Rect(80, 380, 940, 150), TextAnchor.MiddleCenter);
-        thanks.horizontalOverflow = HorizontalWrapMode.Wrap;
-        var done = Img(card.transform, "Done", UiDir, "FinishButton", new Rect(290, 580, 520, 124));
-        Label(done.transform, "Text", "Continue", fontTitle, 50, Color.white, new Rect(0, -6, 520, 124), TextAnchor.MiddleCenter);
-        Clickable(done, sorter.Done);
-        finish.gameObject.SetActive(false);
-
-        SetRefs(sorter, ("host", c));
 
         // ================= Ekran gecisi =================
         var faderImg = MakeImage(canvasGo.transform, "ScreenFader", null);
@@ -336,7 +252,7 @@ public static partial class FishingSceneBuilder
         var fader = faderImg.gameObject.AddComponent<CanvasGroup>();
         fader.alpha = 1f;
 
-        SetRefs(c, ("seaPage", seaPage), ("sortPage", sortPage), ("screenFader", fader), ("sort", sorter),
+        SetRefs(c, ("seaPage", seaPage), ("screenFader", fader),
             ("boat", boat.rectTransform), ("itemsParent", items), ("itemTemplate", template), ("murk", murk),
             ("line", line.rectTransform), ("bobber", bobber.rectTransform), ("splash", splash.rectTransform),
             ("floatingText", floating), ("coinText", coinText), ("healthFill", fill.rectTransform),
@@ -349,17 +265,6 @@ public static partial class FishingSceneBuilder
         SetArray(c, "bagIcons", bagIcons);
         SetArray(c, "trashSprites", TrashCatalog.Trash.Select(t => (Object)LoadSprite(t.sprite, ArtDir)).ToArray());
         SetArray(c, "fishSprites", TrashCatalog.FishSprites.Select(f => (Object)LoadSprite(f, ArtDir)).ToArray());
-
-        SetRefs(sorter, ("itemIndex", itemIndex), ("itemName", itemName), ("question", question), ("itemImage", itemImage),
-            ("rightCount", rightCount), ("wrongCount", wrongCount), ("coinsSoFar", soFar), ("coinText", yCoinText),
-            ("bagTitle", bagTitle), ("floatingText", sortFloat), ("finishOverlay", finish.gameObject),
-            ("finishCard", card.rectTransform), ("finishCoins", finishCoins), ("finishScore", finishScore),
-            ("rowNormal", LoadSprite("BinRow", UiDir)), ("rowRight", LoadSprite("BinRowRight", UiDir)),
-            ("rowWrong", LoadSprite("BinRowWrong", UiDir)));
-        SetArray(sorter, "binRows", binRows);
-        SetArray(sorter, "binCounts", binCounts);
-        SetArray(sorter, "bagTiles", tiles);
-        sortPage.gameObject.SetActive(false);
 
         Directory.CreateDirectory(Path.GetDirectoryName(ScenePath));
         ArtLocalization.Apply(canvasGo.transform);
@@ -405,7 +310,7 @@ public static partial class FishingSceneBuilder
         var trash = Img(row, "Trash", ArtDir, "TrashWaterBottle", new Rect(20, 30, 139, 51));
         trash.preserveAspect = true;
         Img(row, "Fish", ArtDir, "FishAnchovy", new Rect(170, 30, 150, 57)).preserveAspect = true;
-        var reward = Label(row, "Text", "<color=#B4472A>Trash +5</color> coins and a cleaner ocean · <color=#17777A>Fish +10</color> coins",
+        var reward = Label(row, "Text", "<color=#B4472A>Trash +5</color> coins · clean water brings the <color=#17777A>fish</color> back",
             fontHeavy, 32, Ink, new Rect(350, 14, 870, 100));
         reward.horizontalOverflow = HorizontalWrapMode.Wrap;
         row = HowRow(group, 3);

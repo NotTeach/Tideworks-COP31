@@ -8,23 +8,22 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 /// <summary>
-/// Gorev 1 - Denizi temizle: tekneyle dolas, oltayla copleri (+5) ve baliklari (+10) topla.
+/// Gorev 1 - Denizi temizle: tekneyle dolas, oltayla copleri (+5) topla. Balik avlanmaz:
+/// copler azaldikca temizlenen yerlerde balik turleri geri doner (okyanus sagligi gunde ~%35 artar).
 /// Bilgisayar: yukari/W ileri, asagi/S geri, sol-sag/A-D dumen, E (veya Space) ile olta at, ya da bir esyaya tikla.
 /// Telefon: joystick ile kurek cek, olta butonuyla at. Adalara ve kumsala carpinca tekne geri seker.
-/// Butun copler toplaninca ayristirma (SortController), ardindan carettalara yardim (BeachController) gelir.
+/// Butun copler toplaninca ayristirma sahnesi (Recycling), ardindan kumsal (Beach) gelir.
 /// Konumlar artboard pikselidir: x saga, y asagi, sol ust kose (0,0).
 /// </summary>
 public class FishingController : MonoBehaviour
 {
     [Header("Sahneler")]
     [SerializeField] string menuSceneName = "MainMenu";
-    [SerializeField] string beachSceneName = "Beach";
+    [SerializeField] string recyclingSceneName = "Recycling";
 
     [Header("Sayfalar")]
     [SerializeField] CanvasGroup seaPage;
-    [SerializeField] CanvasGroup sortPage;
     [SerializeField] CanvasGroup screenFader;
-    [SerializeField] SortController sort;
 
     [Header("Deniz")]
     [SerializeField] RectTransform boat;
@@ -117,7 +116,8 @@ public class FishingController : MonoBehaviour
     readonly List<int> bag = new List<int>();
     Vector2 boatPos, velocity;
     float boatAngle = 180f, forwardSpeed, turnVelocity, bumpCooldown, hintTimer;
-    int fishCaught;
+    int healthStart, healthTarget, fishBefore, fishToday, fishShown;
+    readonly List<int> fishThresholds = new List<int>();
     bool casting, leaving, sorting;
 
     class Wave { public RectTransform rt; public Image img; public Vector2 home; public float phase, speed; }
@@ -139,7 +139,6 @@ public class FishingController : MonoBehaviour
     {
         Time.timeScale = 1f;
         seaPage.gameObject.SetActive(true);
-        sortPage.gameObject.SetActive(false);
         mobileControls.SetActive(IsMobile);
         itemTemplate.gameObject.SetActive(false);
         line.gameObject.SetActive(false);
@@ -153,6 +152,7 @@ public class FishingController : MonoBehaviour
         boatPos = boatStart;
         PlaceBoat();
         SpawnWaves();
+        SetupEcology();
         Spawn();
         OpenHowTo();
         RefreshHud();
@@ -186,21 +186,93 @@ public class FishingController : MonoBehaviour
         }
 
         for (int i = 0; i < Mathf.Min(TrashPerRun, trashSprites.Length); i++) Add(i, false, Free(70));
-        for (int i = 0; i < fishSprites.Length; i++) Add(i, true, Free(110));
         boat.SetAsLastSibling();
+
+        // Onceki gunlerde donen baliklar zaten yuzuyor
+        for (int i = 0; i < fishBefore; i++) AddFish(TrashCatalog.FishReturnOrder[i], FishSpotNear(Free(FishRadius)), false);
 
         void Add(int kind, bool fish, Vector2 pos)
         {
             var img = Instantiate(itemTemplate, itemsParent);
             img.gameObject.SetActive(true);
-            img.sprite = fish ? fishSprites[kind] : trashSprites[kind];
+            img.sprite = trashSprites[kind];
             img.SetNativeSize();
-            img.rectTransform.sizeDelta *= fish ? 0.62f : 1f;
-            var c = new Catch { rt = img.rectTransform, kind = kind, fish = fish, home = pos,
-                                phase = (float)rng.NextDouble() * 6.28f, swim = fish ? (rng.NextDouble() < 0.5 ? -1 : 1) : 0 };
+            var c = new Catch { rt = img.rectTransform, kind = kind, fish = false, home = pos,
+                                phase = (float)rng.NextDouble() * 6.28f };
             catches.Add(c);
             img.GetComponent<Button>().onClick.AddListener(() => OnItemClicked(c));
             SetPos(c.rt, pos);
+        }
+    }
+
+    /// <summary>Baligin govdesi (yaklasik 190 px uzunluk) tamamen suda kalsin diye kullanilan yaricap.</summary>
+    const float FishRadius = 120f;
+
+    /// <summary>Verilen noktaya en yakin, adaya / kumsala / ust-alt bara tasmayan su noktasi.</summary>
+    Vector2 FishSpotNear(Vector2 p)
+    {
+        if (!Blocked(p, FishRadius)) return p;
+        for (float r = 40f; r <= 900f; r += 40f)
+            for (int i = 0; i < 16; i++)
+            {
+                float a = i * Mathf.PI / 8f;
+                var q = p + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * r;
+                if (!Blocked(q, FishRadius)) return q;
+            }
+        return new Vector2(1250f, 900f);
+    }
+
+    /// <summary>Temiz suda yuzen balik (avlanmaz). appear: yeni donduyse belirerek gelir.</summary>
+    void AddFish(int species, Vector2 pos, bool appear)
+    {
+        var img = Instantiate(itemTemplate, itemsParent);
+        img.gameObject.SetActive(true);
+        img.sprite = fishSprites[species];
+        img.SetNativeSize();
+        img.rectTransform.sizeDelta *= 0.62f;
+        img.rectTransform.SetSiblingIndex(boat.GetSiblingIndex());
+        var c = new Catch { rt = img.rectTransform, kind = species, fish = true, home = pos,
+                            phase = UnityEngine.Random.value * 6.28f, swim = UnityEngine.Random.value < 0.5f ? -1 : 1 };
+        catches.Add(c);
+        img.GetComponent<Button>().onClick.AddListener(() => OnItemClicked(c));
+        SetPos(c.rt, pos);
+        if (appear) StartCoroutine(FishAppears(img));
+    }
+
+    IEnumerator FishAppears(Image img)
+    {
+        yield return Tween(1.2f, t =>
+        {
+            var col = img.color; col.a = t; img.color = col;
+        });
+    }
+
+    /// <summary>Gunun hedefleri: saglik %0 -> %35 (sonraki gunler ustune), balik turleri esiklerde doner.</summary>
+    void SetupEcology()
+    {
+        int day = GameProgress.CurrentDay;
+        healthStart = GameProgress.OceanHealth;
+        healthTarget = Mathf.Min(100, healthStart + TrashCatalog.HealthPerDay);
+        if (day >= GameProgress.TotalDays) healthTarget = 100;
+        fishBefore = GameProgress.FishReturned;
+        fishToday = Mathf.Min(TrashCatalog.FishForDay(day), TrashCatalog.FishReturnOrder.Length - fishBefore);
+        fishThresholds.Clear();
+        for (int k = 0; k < fishToday; k++)
+            fishThresholds.Add(Mathf.RoundToInt(TrashTotal * (k + 1f) / (fishToday + 1f)));
+    }
+
+    /// <summary>Esige gelindiyse temizlenen yerde bir balik turu belirir.</summary>
+    void CheckFishReturn(Vector2 cleanedSpot)
+    {
+        while (fishShown < fishThresholds.Count && bag.Count >= fishThresholds[fishShown])
+        {
+            int species = TrashCatalog.FishReturnOrder[fishBefore + fishShown];
+            fishShown++;
+            var spot = FishSpotNear(cleanedSpot);
+            AddFish(species, spot, true);
+            TwSes.Efekt(Ses.GecisKabarcik, 0.8f);
+            ShowFloating(Loc.F("{0} is back in the clean water!", Loc.T(TrashCatalog.FishNames[species])),
+                spot + new Vector2(0, -60f), new Color32(190, 255, 236, 255));
         }
     }
 
@@ -350,7 +422,7 @@ public class FishingController : MonoBehaviour
             {
                 // Balik ileri geri yuzer; bir yere carpacaksa doner
                 var next = c.home + new Vector2(c.swim * 60f * dt, 0);
-                if (Blocked(next, 70f) || Mathf.Abs(next.x - c.home.x) > 0 && UnityEngine.Random.value < 0.002f) c.swim = -c.swim;
+                if (Blocked(next, FishRadius) || UnityEngine.Random.value < 0.002f) c.swim = -c.swim;
                 else c.home = next;
                 c.rt.localScale = new Vector3(c.swim < 0 ? -1f : 1f, 1f, 1f);
                 SetPos(c.rt, c.home + new Vector2(0, Mathf.Sin(t * 1.6f + c.phase) * 6f));
@@ -376,7 +448,7 @@ public class FishingController : MonoBehaviour
         float bestD = castRange;
         foreach (var c in catches)
         {
-            if (c.taken) continue;
+            if (c.taken || c.fish) continue;
             float d = Vector2.Distance(c.home, boatPos);
             if (d < bestD) { bestD = d; best = c; }
         }
@@ -387,6 +459,11 @@ public class FishingController : MonoBehaviour
     void OnItemClicked(Catch c)
     {
         if (casting || sorting || c.taken || Paused) return;
+        if (c.fish)
+        {
+            ShowFloating(Loc.T("Let it swim! Fish need clean water."), c.home, new Color32(190, 255, 236, 255));
+            return;
+        }
         if (Vector2.Distance(c.home, boatPos) > castRange)
         {
             ShowFloating(Loc.T("Too far! Row a little closer."), c.home, Color.white);
@@ -414,16 +491,16 @@ public class FishingController : MonoBehaviour
         bobber.gameObject.SetActive(false);
         c.rt.gameObject.SetActive(false);
 
-        int reward = c.fish ? 10 : 5;
+        const int reward = 5;
         GameProgress.Coins += reward;
         TwSes.EfektCesitli(Ses.AtikTopla, 0.8f);
         ShowFloating("+" + reward, boatPos, new Color32(255, 214, 92, 255));
-        if (c.fish) fishCaught++;
-        else bag.Add(c.kind);
+        bag.Add(c.kind);
+        CheckFishReturn(c.home);
         RefreshHud();
         casting = false;
 
-        if (!c.fish && bag.Count >= TrashTotal) StartCoroutine(AllCollected());
+        if (bag.Count >= TrashTotal) StartCoroutine(AllCollected());
     }
 
     IEnumerator Miss()
@@ -485,13 +562,14 @@ public class FishingController : MonoBehaviour
 
     void RefreshHud()
     {
-        float health = bag.Count / (float)TrashTotal;
+        float cleaned = bag.Count / (float)TrashTotal;
+        float health = Mathf.Lerp(healthStart, healthTarget, cleaned) / 100f;
         coinText.text = GameProgress.Coins.ToString();
         healthFill.sizeDelta = new Vector2(Mathf.Max(18f, healthWidth * health), healthFill.sizeDelta.y);
         healthFill.gameObject.SetActive(health > 0f);
         healthText.text = Mathf.RoundToInt(health * 100f) + "%";
         taskText.text = Loc.F("{0} / {1} trash fished out", bag.Count, TrashTotal);
-        fishText.text = fishCaught + "/" + fishSprites.Length;
+        fishText.text = (fishBefore + fishShown) + "/" + fishSprites.Length;
         bagCount.text = Loc.F("{0} items", bag.Count);
         for (int i = 0; i < bagIcons.Length; i++)
         {
@@ -658,20 +736,12 @@ public class FishingController : MonoBehaviour
 
     IEnumerator GoSort()
     {
-        if (screenFader) yield return Fade(screenFader, 0f, 1f, true);
-        seaPage.gameObject.SetActive(false);
-        sortPage.gameObject.SetActive(true);
-        sort.Begin(new List<int>(bag), trashSprites);
-        TwSes.EkranGecisi(Ses.MuzikTamir, Ses.AmbiyansAtolye, null);
-        if (screenFader) yield return Fade(screenFader, 1f, 0f);
-    }
-
-    /// <summary>Ayristirma bitince: Gorev 3 (carettalara yardim) ayri sahnede.</summary>
-    public void GoBeach()
-    {
-        if (leaving) return;
-        leaving = true;
-        StartCoroutine(Load(beachSceneName));
+        // Gunun sonucu kaydedilir: saglik hedefe ulasti, donen baliklar ekosisteme katildi
+        GameProgress.OceanHealth = healthTarget;
+        GameProgress.FishReturned = fishBefore + fishShown;
+        CatchBag.Items = new List<int>(bag);
+        GameSettings.Save();
+        yield return Load(recyclingSceneName);
     }
 
     public void Restart()

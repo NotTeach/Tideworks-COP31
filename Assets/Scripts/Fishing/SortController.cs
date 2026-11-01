@@ -13,7 +13,15 @@ using UnityEngine.UI;
 public class SortController : MonoBehaviour
 {
     [SerializeField] string menuSceneName = "MainMenu";
-    [SerializeField] FishingController host;
+    [SerializeField] string beachSceneName = "Beach";
+    [SerializeField] CanvasGroup screenFader;
+    [SerializeField] Sprite[] trashSprites;   // TrashCatalog.Trash sirasiyla
+
+    [Header("Ust bar")]
+    [SerializeField] Text placeText;
+    [SerializeField] RectTransform healthFill;
+    [SerializeField] float healthWidth = 300f;
+    [SerializeField] Text healthText;
     [SerializeField] int rightCoins = 3;
     [SerializeField] int wrongCoins = 2;
 
@@ -49,6 +57,25 @@ public class SortController : MonoBehaviour
     readonly int[] counts = new int[5];
     int index, right, wrong, earned;
     bool busy;
+
+    void Start()
+    {
+        Time.timeScale = 1f;
+        foreach (var button in GetComponentsInChildren<Button>(true))
+            if (!button.GetComponent<TwButonSesi>())
+                button.gameObject.AddComponent<TwButonSesi>();
+        placeText.text = Loc.F("Recycling yard · Day {0}", GameProgress.CurrentDay);
+        float health = GameProgress.OceanHealth / 100f;
+        healthFill.sizeDelta = new Vector2(Mathf.Max(18f, healthWidth * health), healthFill.sizeDelta.y);
+        healthText.text = GameProgress.OceanHealth + "%";
+        // Recycling dogrudan acildiysa (deneme) butun copler gelir
+        var items = CatchBag.Items != null && CatchBag.Items.Count > 0
+            ? new List<int>(CatchBag.Items)
+            : new List<int>(System.Linq.Enumerable.Range(0, trashSprites.Length));
+        Begin(items, trashSprites);
+        TwSes.EkranGecisi(Ses.MuzikTamir, Ses.AmbiyansAtolye, null);
+        if (screenFader) StartCoroutine(FadeScreen(1f, 0f, null));
+    }
 
     public void Begin(List<int> items, Sprite[] trashSprites)
     {
@@ -156,10 +183,30 @@ public class SortController : MonoBehaviour
     }
 
     /// <summary>Sonuc kartindaki "Continue": Gorev 3 (carettalara yardim) kumsalina gecer.</summary>
-    public void Done()
+    public void Done() => Leave(beachSceneName);
+
+    /// <summary>Ust bardaki menu butonu.</summary>
+    public void BackToMenu() => Leave(menuSceneName);
+
+    bool leaving;
+
+    void Leave(string scene)
     {
-        if (host) host.GoBeach();
-        else SceneManager.LoadScene(menuSceneName);
+        if (leaving) return;
+        leaving = true;
+        GameSettings.Save();
+        CatchBag.Items.Clear();
+        StartCoroutine(FadeScreen(0f, 1f, () => SceneManager.LoadScene(scene)));
+    }
+
+    IEnumerator FadeScreen(float from, float to, Action done)
+    {
+        if (!screenFader) { done?.Invoke(); yield break; }
+        screenFader.gameObject.SetActive(true);
+        screenFader.blocksRaycasts = true;
+        yield return Tween(0.45f, t => screenFader.alpha = Mathf.Lerp(from, to, Mathf.SmoothStep(0f, 1f, t)));
+        if (to == 0f) screenFader.gameObject.SetActive(false);
+        done?.Invoke();
     }
 
     void RefreshScore()

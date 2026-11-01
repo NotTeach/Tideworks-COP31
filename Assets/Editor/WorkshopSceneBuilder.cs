@@ -22,11 +22,11 @@ using static MainMenuSceneBuilder;
 [InitializeOnLoad]
 public static partial class WorkshopSceneBuilder
 {
-    const int BuilderVersion = 6;
+    const int BuilderVersion = 7;
     const string ScenePath = "Assets/Scenes/Workshop.unity";
     const string SpriteDir = "Assets/Sprites/Workshop/";
     const string FontDir = "Assets/Fonts/";
-    const string AutoBuildKey = "Tideworks.WorkshopAutoBuild.v6";
+    const string AutoBuildKey = "Tideworks.WorkshopAutoBuild.v7";
     static string VersionKey => "Tideworks.WorkshopBuilderVersion." + PlayerSettings.productGUID;
 
     // Dis cephe ve atolye tasarimi 1280x720 (artboard 2x); gun plani 2752x1536 (artboard 1x).
@@ -81,6 +81,7 @@ public static partial class WorkshopSceneBuilder
         { "Wave4", new Rect(1296, 1062, 118, 36) }, { "Wave5", new Rect(288, 1100, 136, 40) },
         { "Wave6", new Rect(108, 1360, 192, 40) }, { "Wave7", new Rect(1108, 1380, 136, 40) },
         { "Boat", new Rect(530, 1068, 490, 294) },
+        { "Shop", new Rect(1080, 370, 340, 300) }, { "SignBoard", new Rect(2018, 944, 330, 100) },
         // Kirli deniz: yuzen copler (Tools/MenuArt/workshop/pollute.py -> trash_rects.json)
         { "TrashBottle0", new Rect(252, 934, 96, 52) },
         { "TrashBag0", new Rect(108, 1148, 84, 64) },
@@ -129,6 +130,7 @@ public static partial class WorkshopSceneBuilder
         if (askToSave && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
 
         ConfigureSprites(SpriteDir);
+        if (Directory.Exists(SpriteDir + "TR/")) ConfigureSprites(SpriteDir + "TR/");
         var legacy = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         fontBody = AssetDatabase.LoadAssetAtPath<Font>(FontDir + "Nunito-Bold.ttf") ?? legacy;
         fontHeavy = AssetDatabase.LoadAssetAtPath<Font>(FontDir + "Nunito-ExtraBold.ttf") ?? legacy;
@@ -167,8 +169,28 @@ public static partial class WorkshopSceneBuilder
             AddBob(Cut(ext, "Wave" + i), new Vector2(16, 5), 0f, 0.2f, i * 0.137f);
         AddBob(Cut(ext, "Boat"), new Vector2(0, 7), 1.6f, 0.17f, 0.3f);
         int trashIndex = 0;
+        var trash = new List<Image>();
         foreach (var name in Art.Keys.Where(k => k.StartsWith("Trash")).ToList())
-            AddBob(Cut(ext, name), new Vector2(9, 6), 7f, 0.14f + 0.02f * (trashIndex % 3), 0.23f * trashIndex++);
+        {
+            var t = Cut(ext, name);
+            trash.Add(t);
+            AddBob(t, new Vector2(9, 6), 7f, 0.14f + 0.02f * (trashIndex % 3), 0.23f * trashIndex++);
+        }
+        // 2. gun: copun cogu toplandi, bu dordu hala denizde
+        string[] stillThere = { "TrashBottle0", "TrashCan0", "TrashBag1", "TrashNet0" };
+        var hiddenOnDay2 = trash.Where(t => !stillThere.Contains(t.name)).Select(t => (Object)t.gameObject).ToArray();
+
+        // 2. gun: yalidaki magaza (tabela yazisi cevrilir)
+        var shopImg = Cut(ext, "Shop");
+        shopImg.raycastTarget = true;
+        var shopButton = shopImg.gameObject.AddComponent<Button>();
+        shopButton.transition = Selectable.Transition.None;
+        shopImg.gameObject.AddComponent<MenuButtonFx>().hoverScale = 1.04f;
+        UnityEventTools.AddPersistentListener(shopButton.onClick, c.OpenShop);
+        Label(shopImg.transform, "Sign", "SHOP", fontTitle, 40, new Color32(60, 44, 40, 255), new Rect(64, 16, 212, 54), TextAnchor.MiddleCenter);
+        var toast = Label(ext, "Toast", "", fontTitle, 46, Color.white, new Rect(830, 220, 900, 90), TextAnchor.MiddleCenter);
+        toast.gameObject.AddComponent<Outline>().effectColor = new Color(0.06f, 0.2f, 0.24f, 0.9f);
+        toast.gameObject.SetActive(false);
 
         var doorLeft = Cut(ext, "DoorLeafLeft");
         var doorRight = Cut(ext, "DoorLeafRight");
@@ -184,6 +206,10 @@ public static partial class WorkshopSceneBuilder
         var sparkle = MakeImage(ext, "KeySparkle", LoadSprite("Sparkle", SpriteDir));
         Place(sparkle.rectTransform, Centered(1986, 966, 46));
         Pulse(sparkle, 0.15f, 1f, 0.8f, 0.25f, 0.35f);
+        // Tabela (etiketin altinda): kapi acilana kadar CLOSED, sonra OPEN
+        var sign = Cut(ext, "SignBoard");
+        var signText = Label(sign.transform, "Text", "CLOSED", fontTitle, 58, new Color32(196, 64, 48, 255),
+            new Rect(0, 0, 330, 100), TextAnchor.MiddleCenter);
         var takeKey = ArtButton(ext, "TakeKeyButton", c.TakeKey);
 
         var questStep = Label(ext, "QuestStep", "", fontHeavy, 28, QuestStepInk, R2(47, 37, 405, 22));
@@ -358,6 +384,9 @@ public static partial class WorkshopSceneBuilder
             ("firstCheck", firstCheck.rectTransform), ("doneBadge", doneBadge.rectTransform),
             ("firstTitle", firstTitle), ("firstSubtitle", firstSub), ("firstStrike", firstStrike.rectTransform),
             ("startDayButton", startDay),
+            ("day2Background", LoadSprite("ExteriorBackgroundDay2", SpriteDir)),
+            ("day2BackgroundTr", LoadSprite("ExteriorBackgroundDay2", SpriteDir + "TR/")),
+            ("shop", shopImg.gameObject), ("toast", toast), ("sign", sign.rectTransform), ("signText", signText),
             ("dialogue", dialogue), ("tellMoreButton", tellMore), ("letsFixButton", letsFix),
             ("tasksButtonActive", tasksActive.gameObject), ("tasksPanel", panel.rectTransform),
             ("taskCount", count), ("taskBadge", badgeText),
@@ -371,6 +400,7 @@ public static partial class WorkshopSceneBuilder
             ("rewardOverlay", rewardOverlay.gameObject), ("missionOverlay", missionOverlay.gameObject),
             ("missionCard", mission.rectTransform));
         SetArray(c, "floatingSprites", floating);
+        SetArray(c, "trashHiddenOnDay2", hiddenOnDay2);
         var so = new SerializedObject(c);
         SetStrings(so.FindProperty("dialogueLines"), DialogueLines);
         SetStrings(so.FindProperty("afterRepairLines"), AfterRepairLines);
@@ -378,6 +408,8 @@ public static partial class WorkshopSceneBuilder
 
         Directory.CreateDirectory(Path.GetDirectoryName(ScenePath));
         ArtLocalization.Apply(canvasGo.transform);
+        // Dis cephe zemini dile gore sprite degistirir; 2. gun zemini de onun uzerinden verilir
+        SetRefs(c, ("exteriorBackground", ext.Find("Background").GetComponent<LocalizedImage>()));
         EditorSceneManager.SaveScene(scene, ScenePath);
         AddToBuildSettings();
         EditorPrefs.SetInt(VersionKey, BuilderVersion);

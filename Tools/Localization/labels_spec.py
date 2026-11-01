@@ -49,6 +49,10 @@ SPEC = {
         ("YUSUF'SREPAIRS", "YUSUF'S REPAIRS", "N", "c"),
         ("OPEN", "OPEN", "B", "c"),
     ],
+    "Workshop/ExteriorBackgroundDay2": [
+        ("YUSUF'SREPAIRS", "YUSUF'S REPAIRS", "N", "c"),
+        ("OPEN", "OPEN", "B", "c"),
+    ],
     "Workshop/DayPlanBackground": [
         ("DAY 1.MORNING", "DAY 1 · MORNING", "N", "l"),
         ("Open for repairs!", "Open for repairs!", "C", "l"),

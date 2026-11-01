@@ -16,7 +16,7 @@ public class BeachController : MonoBehaviour
 {
     [SerializeField] string menuSceneName = "MainMenu";
     [Tooltip("\"Start Day 2\" yeni gunu bu sahnede baslatir")]
-    [SerializeField] string nextDaySceneName = "Fishing";
+    [SerializeField] string nextDaySceneName = "Workshop";
     [SerializeField] CanvasGroup screenFader;
     [SerializeField] int reward = 5;
 

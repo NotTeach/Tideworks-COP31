@@ -1374,5 +1374,23 @@
    "iron",
    0.72
   ]
+ ],
+ "Workshop/ExteriorBackgroundDay2": [
+  [
+   1786,
+   587,
+   2175,
+   637,
+   "YUSUF'SREPAIRS",
+   0.89
+  ],
+  [
+   2108,
+   978,
+   2256,
+   1019,
+   "OPEN",
+   0.79
+  ]
  ]
 }

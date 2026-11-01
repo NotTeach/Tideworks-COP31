@@ -31,6 +31,16 @@ public static class TrashCatalog
     };
 
     public static readonly string[] FishSprites = { "FishSeaBream", "FishRedMullet", "FishAnchovy", "FishPuffer", "FishMackerel" };
+    public static readonly string[] FishNames = { "Sea bream", "Red mullet", "Anchovy", "Pufferfish", "Mackerel" };
+
+    /// <summary>Temizlenen suya balik turlerinin geri donus sirasi (FishSprites indeksi): once hamsi ve barbunya.</summary>
+    public static readonly int[] FishReturnOrder = { 2, 1, 0, 4, 3 };
+
+    /// <summary>Gun basina geri donen balik turu (1. gun 2, 2. gun 2, 3. gun 1).</summary>
+    public static int FishForDay(int day) => day <= 2 ? 2 : 1;
+
+    /// <summary>Bir temizlik gununun okyanus sagligina katkisi (yuzde).</summary>
+    public const int HealthPerDay = 35;
 
     public static readonly string[] BinNames = { "Metal", "Glass", "Paper", "Plastic", "Household waste" };
     public static readonly string[] BinHints = { "cans, tins, lids", "bottles, jars", "newspaper, cartons", "bottles, bags, nets", "rubber, rope, dirty wood" };

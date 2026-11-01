@@ -653,6 +653,39 @@
    ]
   },
   {
+   "sprite": "Workshop/ExteriorBackgroundDay2",
+   "width": 2560,
+   "height": 1440,
+   "labels": [
+    {
+     "en": "YUSUF'S REPAIRS",
+     "font": "N",
+     "align": "c",
+     "size": 43,
+     "x": 1672.8,
+     "y": 583.0,
+     "w": 614.4,
+     "h": 62.4,
+     "r": 138,
+     "g": 122,
+     "b": 98
+    },
+    {
+     "en": "OPEN",
+     "font": "B",
+     "align": "c",
+     "size": 60,
+     "x": 2048.0,
+     "y": 957.4,
+     "w": 266.0,
+     "h": 87.0,
+     "r": 60,
+     "g": 138,
+     "b": 89
+    }
+   ]
+  },
+  {
    "sprite": "Workshop/DayPlanBackground",
    "width": 2752,
    "height": 1536,

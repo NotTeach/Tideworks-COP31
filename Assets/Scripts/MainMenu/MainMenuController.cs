@@ -15,7 +15,7 @@ public class MainMenuController : MonoBehaviour
     [Tooltip("Start: once dedenin notu / yukleme ekrani")]
     [SerializeField] string introSceneName = "Intro";
     [Tooltip("Continue: dogrudan oyun")]
-    [SerializeField] string gameSceneName = "SampleScene";
+    [SerializeField] string gameSceneName = "Workshop";
 
     [Header("Sayfalar")]
     [SerializeField] CanvasGroup mainPage;

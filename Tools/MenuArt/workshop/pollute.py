@@ -8,8 +8,13 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
 
 D = sys.argv[1]
+# Istege bagli: kirlilik seviyesi (1 = 1. gun, 0.45 = 2. gun daha temiz), temiz zemin ve cikti adi.
+# Cikti adi verilirse sadece zemin yazilir (tekne, dalga ve cop sprite'lari degismez).
+LEVEL = float(sys.argv[2]) if len(sys.argv) > 2 else 1.0
+SRC = sys.argv[3] if len(sys.argv) > 3 else f"{D}/ExteriorBackground.png"
+OUTNAME = sys.argv[4] if len(sys.argv) > 4 else None
 S = 4
-img = Image.open(f"{D}/ExteriorBackground.png").convert("RGB")
+img = Image.open(SRC).convert("RGB")
 W, H = img.size
 A = np.asarray(img).astype(np.float32)
 yy, xx = np.mgrid[0:H, 0:W]
@@ -78,19 +83,22 @@ A[TOP:BOTTOM] = A[TOP:BOTTOM] * (1 - m) + L[..., :3] * m
 r, g, b = A[..., 0], A[..., 1], A[..., 2]
 sea = (yy >= BOTTOM - 2) & (b > r + 35) & (g > r + 35)
 murk = np.array([92, 112, 104], np.float32)
-shade = A * 0.5 + murk * 0.5
+mix = 0.5 * LEVEL
+shade = A * (1 - mix) + murk * mix
 shade *= 0.92 + 0.08 * np.sin(xx / 47.0 + yy / 23.0)[..., None]          # hafif bulanik dalgalanma
 A = np.where(sea[..., None], shade, A)
 
 over = Image.new("RGBA", (W, H), (0, 0, 0, 0))
 od = ImageDraw.Draw(over)
 # yag lekeleri: gokkusagi halkalari
-for cx, cy, rx, ry in ((230, 1120, 150, 46), (760, 920, 120, 34), (330, 1390, 170, 40), (1200, 1180, 90, 28)):
+OIL = ((230, 1120, 150, 46), (760, 920, 120, 34), (330, 1390, 170, 40), (1200, 1180, 90, 28))
+for cx, cy, rx, ry in OIL[:max(1, round(len(OIL) * LEVEL))]:
     for k, col in enumerate([(150, 90, 170), (70, 140, 190), (90, 170, 110), (210, 190, 80), (200, 110, 80)]):
         f = 1 - k * 0.16
-        od.ellipse([cx - rx * f, cy - ry * f, cx + rx * f, cy + ry * f], outline=col + (70,), width=7)
+        od.ellipse([cx - rx * f, cy - ry * f, cx + rx * f, cy + ry * f], outline=col + (int(70 * max(LEVEL, 0.6)),), width=7)
 # kopuk / pislik lekeleri
-for cx, cy, s in ((520, 990, 1.0), (140, 1290, 0.8), (1150, 1000, 0.7), (900, 1390, 0.9), (420, 1240, 0.6)):
+FOAM = ((520, 990, 1.0), (140, 1290, 0.8), (1150, 1000, 0.7), (900, 1390, 0.9), (420, 1240, 0.6))
+for cx, cy, s in FOAM[:max(1, round(len(FOAM) * LEVEL))]:
     for _ in range(9):
         ox, oy, rr = rng.normal(0, 26 * s), rng.normal(0, 8 * s), rng.uniform(10, 22) * s
         od.ellipse([cx + ox - rr, cy + oy - rr * 0.55, cx + ox + rr, cy + oy + rr * 0.55], fill=(226, 214, 160, 150))
@@ -98,7 +106,11 @@ over = over.filter(ImageFilter.GaussianBlur(1.5))
 O = np.asarray(over).astype(np.float32)
 oa = O[..., 3:] / 255 * sea[..., None]
 A = A * (1 - oa) + O[..., :3] * oa
-Image.fromarray(np.clip(A, 0, 255).astype(np.uint8)).save(f"{D}/ExteriorBackground.png", optimize=True)
+name = OUTNAME or "ExteriorBackground"
+Image.fromarray(np.clip(A, 0, 255).astype(np.uint8)).save(f"{D}/{name}.png", optimize=True)
+if OUTNAME:
+    print("ok", name)
+    sys.exit(0)
 Image.fromarray(np.clip(A, 0, 255).astype(np.uint8)).resize((640, 360), Image.LANCZOS).filter(ImageFilter.GaussianBlur(10)).save(f"{D}/ExteriorBackdrop.png")
 
 # Tekne kenarindaki eski deniz rengi (yari saydam pikseller) de bulaniklassin

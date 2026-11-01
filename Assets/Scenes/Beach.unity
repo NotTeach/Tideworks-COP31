@@ -4771,7 +4771,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BeachController
   menuSceneName: MainMenu
-  nextDaySceneName: Fishing
+  nextDaySceneName: Workshop
   screenFader: {fileID: 1045050775}
   reward: 5
   lamps:
