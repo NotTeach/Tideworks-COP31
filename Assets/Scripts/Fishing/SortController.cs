@@ -8,11 +8,22 @@ using UnityEngine.UI;
 
 /// <summary>
 /// Gorev 2 - Toplananlari ayir: her cop dogru kutuya atilir. Dogru +3 altin, yanlis -2 altin.
-/// Yanlista esya yine de dogru kutuya gider (oyuncu dogrusunu gorur). Hepsi bitince sonuc karti.
+/// Yanlista esya yine de dogru kutuya gider (oyuncu dogrusunu gorur). Hepsi bitince sonuc karti, ardindan kumsal.
 /// </summary>
 public class SortController : MonoBehaviour
 {
     [SerializeField] string menuSceneName = "MainMenu";
+    [SerializeField] string beachSceneName = "Beach";
+    [Tooltip("2. gunun kumsali (caretta kurtarma)")]
+    [SerializeField] string day2BeachSceneName = "Day2Beach";
+    [SerializeField] CanvasGroup screenFader;
+    [SerializeField] Sprite[] trashSprites;   // TrashCatalog.Trash sirasiyla
+
+    [Header("Ust bar")]
+    [SerializeField] Text placeText;
+    [SerializeField] RectTransform healthFill;
+    [SerializeField] float healthWidth = 300f;
+    [SerializeField] Text healthText;
     [SerializeField] int rightCoins = 3;
     [SerializeField] int wrongCoins = 2;
 
@@ -48,6 +59,25 @@ public class SortController : MonoBehaviour
     readonly int[] counts = new int[5];
     int index, right, wrong, earned;
     bool busy;
+
+    void Start()
+    {
+        Time.timeScale = 1f;
+        foreach (var button in GetComponentsInChildren<Button>(true))
+            if (!button.GetComponent<TwButonSesi>())
+                button.gameObject.AddComponent<TwButonSesi>();
+        placeText.text = Loc.F("Recycling yard · Day {0}", GameProgress.CurrentDay);
+        float health = GameProgress.OceanHealth / 100f;
+        healthFill.sizeDelta = new Vector2(Mathf.Max(18f, healthWidth * health), healthFill.sizeDelta.y);
+        healthText.text = GameProgress.OceanHealth + "%";
+        // Recycling dogrudan acildiysa (deneme) butun copler gelir
+        var items = CatchBag.Items != null && CatchBag.Items.Count > 0
+            ? new List<int>(CatchBag.Items)
+            : new List<int>(System.Linq.Enumerable.Range(0, trashSprites.Length));
+        Begin(items, trashSprites);
+        TwSes.EkranGecisi(Ses.MuzikTamirciCaz, Ses.AmbiyansAtolye, null);
+        if (screenFader) StartCoroutine(FadeScreen(1f, 0f, null));
+    }
 
     public void Begin(List<int> items, Sprite[] trashSprites)
     {
@@ -103,7 +133,7 @@ public class SortController : MonoBehaviour
         {
             right++;
             earned += rightCoins;
-            GameProgress.Coins += rightCoins;
+            PlayerWallet.Add(rightCoins);
             TwSes.Efekt(Ses.Onay);
             Float("+" + rightCoins, binRows[chosen].rectTransform, new Color32(40, 140, 80, 255));
         }
@@ -112,7 +142,7 @@ public class SortController : MonoBehaviour
             wrong++;
             int lose = Mathf.Min(wrongCoins, GameProgress.Coins);
             earned -= lose;
-            GameProgress.Coins -= lose;
+            PlayerWallet.Add(-lose);
             TwSes.Efekt(Ses.Hata);
             Float("-" + wrongCoins, binRows[chosen].rectTransform, new Color32(190, 60, 40, 255));
             question.text = Loc.F("Not quite! It goes in {0}.", Loc.T(TrashCatalog.BinNames[correct]));
@@ -154,11 +184,31 @@ public class SortController : MonoBehaviour
         yield return Tween(0.35f, t => finishCard.localScale = Vector3.one * EaseOutBack(t));
     }
 
-    /// <summary>Sonuc kartindaki buton: gun biter, ana menuye donulur.</summary>
-    public void Done()
+    /// <summary>Sonuc kartindaki "Continue": Gorev 3 (carettalara yardim) kumsalina gecer.</summary>
+    public void Done() => Leave(GameProgress.CurrentDay == 2 ? day2BeachSceneName : beachSceneName);
+
+    /// <summary>Ust bardaki menu butonu.</summary>
+    public void BackToMenu() => Leave(menuSceneName);
+
+    bool leaving;
+
+    void Leave(string scene)
     {
-        GameProgress.CompleteDay();
-        SceneManager.LoadScene(menuSceneName);
+        if (leaving) return;
+        leaving = true;
+        GameSettings.Save();
+        CatchBag.Items.Clear();
+        StartCoroutine(FadeScreen(0f, 1f, () => SceneManager.LoadScene(scene)));
+    }
+
+    IEnumerator FadeScreen(float from, float to, Action done)
+    {
+        if (!screenFader) { done?.Invoke(); yield break; }
+        screenFader.gameObject.SetActive(true);
+        screenFader.blocksRaycasts = true;
+        yield return Tween(0.45f, t => screenFader.alpha = Mathf.Lerp(from, to, Mathf.SmoothStep(0f, 1f, t)));
+        if (to == 0f) screenFader.gameObject.SetActive(false);
+        done?.Invoke();
     }
 
     void RefreshScore()

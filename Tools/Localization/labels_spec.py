@@ -49,6 +49,10 @@ SPEC = {
         ("YUSUF'SREPAIRS", "YUSUF'S REPAIRS", "N", "c"),
         ("OPEN", "OPEN", "B", "c"),
     ],
+    "Workshop/ExteriorBackgroundDay2": [
+        ("YUSUF'SREPAIRS", "YUSUF'S REPAIRS", "N", "c"),
+        ("OPEN", "OPEN", "B", "c"),
+    ],
     "Workshop/DayPlanBackground": [
         ("DAY 1.MORNING", "DAY 1 · MORNING", "N", "l"),
         ("Open for repairs!", "Open for repairs!", "C", "l"),
@@ -83,6 +87,24 @@ SPEC = {
         ("OPEN", "OPEN", "B", "c"),
         ("ROPE", "ROPE", "N", "c"),
         ("NETS", "NETS", "N", "c"),
+    ],
+    "Day2/InteriorDay2Background": [
+        ("Oceanhealth", "Ocean health", "N", "l"),
+        ("YUSUF'SREPAIRS.1971", "YUSUF'S REPAIRS · 1971", "N", "c"),
+        ("WORKSHOP", "WORKSHOP", "N", "c"),
+        ("PLASTIC", "PLASTIC", "N", "c"),
+        ("GLASS", "GLASS", "N", "c"),
+        ("OPEN", "OPEN", "B", "c"),
+        ("ROPE", "ROPE", "N", "c"),
+    ],
+    "Day2/InteriorDay2AfterBackground": [
+        ("Oceanhealth", "Ocean health", "N", "l"),
+        ("YUSUF'SREPAIRS.1971", "YUSUF'S REPAIRS · 1971", "N", "c"),
+        ("WORKSHOP", "WORKSHOP", "N", "c"),
+        ("PLASTIC", "PLASTIC", "N", "c"),
+        ("GLASS", "GLASS", "N", "c"),
+        ("OPEN", "OPEN", "B", "c"),
+        ("ROPE", "ROPE", "N", "c"),
     ],
     "Workshop/TasksPanel": [
         ("Today's tasks", "Today's tasks", "C", "l"),

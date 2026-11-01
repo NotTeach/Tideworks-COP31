@@ -11,24 +11,31 @@ using UnityEngine.UI;
 using static MainMenuSceneBuilder;
 
 /// <summary>
-/// Denize acilis sahnesini (Assets/Scenes/Fishing.unity) kodla kurar:
+/// Denize acilis sahnelerini (Assets/Scenes/Fishing.unity ve 2. gunun firtinali denizi Day2Sea.unity) kodla kurar:
 /// Gorev 1 - tekneyle oltayla cop ve balik toplama, Gorev 2 - copleri dogru kutulara ayirma.
+/// Gorev 2 (ayristirma) ayri sahnedir: Assets/Scenes/Recycling.unity (FishingSceneBuilder.Recycling.cs).
+/// Gorev 3 (carettalara yardim) ayri sahnedir: Assets/Scenes/Beach.unity (FishingSceneBuilder.Beach.cs).
 /// Oyun gorselleri: Assets/Art/Fishing (Tools/MenuArt/fishing/cut_assets.py),
 /// arayuz ve zeminler: Assets/Sprites/Fishing (Tools/MenuArt/fishing/fishing_ui.py).
 /// Builder surumu degisince proje acildiginda bir kez otomatik calisir.
 /// Tekrar kurmak icin: Unity menusu > Tideworks > Rebuild Fishing Scene
 /// </summary>
 [InitializeOnLoad]
-public static class FishingSceneBuilder
+public static partial class FishingSceneBuilder
 {
-    const int BuilderVersion = 3;
+    const int BuilderVersion = 8;
     const string ScenePath = "Assets/Scenes/Fishing.unity";
+    const string Day2ScenePath = "Assets/Scenes/Day2Sea.unity";
+    const string ShopDir = "Assets/Sprites/Shop/";
     const string ArtDir = "Assets/Art/Fishing/";
     const string UiDir = "Assets/Sprites/Fishing/";
+    const string BeachDir = "Assets/Sprites/Beach/";
     const string CoinPath = "Assets/Sprites/Workshop/";
     const string FontDir = "Assets/Fonts/";
-    const string AutoBuildKey = "Tideworks.FishingAutoBuild.v3";
+    const string AutoBuildKey = "Tideworks.FishingAutoBuild.v8";
+    const string Day2AutoBuildKey = "Tideworks.Day2SeaAutoBuild.v8";
     static string VersionKey => "Tideworks.FishingBuilderVersion." + PlayerSettings.productGUID;
+    static string Day2VersionKey => "Tideworks.Day2SeaBuilderVersion." + PlayerSettings.productGUID;
 
     static readonly Vector2 Art = new Vector2(2560, 1440);
     static readonly Color Night = new Color32(5, 24, 30, 255);
@@ -41,8 +48,25 @@ public static class FishingSceneBuilder
 
     static FishingSceneBuilder()
     {
+        RequestBeach();
+        RequestRecycling();
+        RequestDay2Beach();
+        if (!File.Exists(Day2ScenePath) || EditorPrefs.GetInt(Day2VersionKey, 0) < BuilderVersion)
+            SceneAutoBuild.Request(Day2AutoBuildKey, () => Build(askToSave: true, day2: true));
         if (File.Exists(ScenePath) && EditorPrefs.GetInt(VersionKey, 0) >= BuilderVersion) return;
         SceneAutoBuild.Request(AutoBuildKey, () => Build(askToSave: true));
+    }
+
+    static void RequestRecycling()
+    {
+        if (File.Exists(RecyclingScenePath) && EditorPrefs.GetInt(RecyclingVersionKey, 0) >= RecyclingBuilderVersion) return;
+        SceneAutoBuild.Request(RecyclingAutoBuildKey, () => BuildRecycling(askToSave: true));
+    }
+
+    static void RequestBeach()
+    {
+        if (File.Exists(BeachScenePath) && EditorPrefs.GetInt(BeachVersionKey, 0) >= BeachBuilderVersion) return;
+        SceneAutoBuild.Request(BeachAutoBuildKey, () => BuildBeach(askToSave: true));
     }
 
     [MenuItem("Tideworks/Rebuild Fishing Scene")]
@@ -55,18 +79,27 @@ public static class FishingSceneBuilder
         Build(askToSave: true);
     }
 
-    static void Build(bool askToSave)
+    [MenuItem("Tideworks/Rebuild Day 2 Sea Scene")]
+    static void RebuildDay2Menu()
+    {
+        if (File.Exists(Day2ScenePath) && !EditorUtility.DisplayDialog("Rebuild Day 2 Sea",
+                "Day2Sea sahnesi bastan kurulacak. Sahnede elle yaptiginiz degisiklikler silinir. Devam edilsin mi?",
+                "Rebuild", "Cancel"))
+            return;
+        Build(askToSave: true, day2: true);
+    }
+
+    /// <summary>day2: firtinali 2. gun denizi (hayalet aglar, ruzgar, yavru balik karti, bulutlar).</summary>
+    static void Build(bool askToSave, bool day2 = false)
     {
         if (EditorApplication.isPlayingOrWillChangePlaymode) return;
         if (askToSave && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+        string scenePath = day2 ? Day2ScenePath : ScenePath;
 
         ConfigureSprites(ArtDir);
         ConfigureSprites(UiDir);
-        var legacy = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        fontBody = AssetDatabase.LoadAssetAtPath<Font>(FontDir + "Nunito-Bold.ttf") ?? legacy;
-        fontHeavy = AssetDatabase.LoadAssetAtPath<Font>(FontDir + "Nunito-ExtraBold.ttf") ?? legacy;
-        fontTitle = AssetDatabase.LoadAssetAtPath<Font>(FontDir + "Baloo2-ExtraBold.ttf") ?? legacy;
-        fontHand = AssetDatabase.LoadAssetAtPath<Font>(FontDir + "Caveat-Bold.ttf") ?? legacy;
+        ConfigureSprites(ShopDir);
+        LoadFonts();
 
         var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
         var camGo = new GameObject("Main Camera", typeof(Camera), typeof(AudioListener));
@@ -105,7 +138,28 @@ public static class FishingSceneBuilder
         var waveTemplate = Img(items, "WaveTemplate", UiDir, "WaveLine", new Rect(0, 0, 150, 34));
         var wakeTemplate = Img(items, "WakeTemplate", UiDir, "Wake", new Rect(0, 0, 120, 120));
         wakeTemplate.gameObject.SetActive(false);
+        var netCircle = Img(items, "NetCircle", ShopDir, "NetCircle", new Rect(0, 0, 380, 380));
+        netCircle.color = new Color(1f, 1f, 1f, 0.9f);
+        netCircle.gameObject.SetActive(false);
         var boat = Img(items, "Boat", ArtDir, "BoatTop", new Rect(1070, 664, 360, 192));
+
+        // Firtina: gri ton, suda kayan bulut golgeleri, temizlendikce cikan gunes
+        Image stormTint = null, sunGlow = null;
+        var clouds = new Image[0];
+        if (day2)
+        {
+            stormTint = MakeImage(sea, "StormTint", null);
+            stormTint.color = new Color32(52, 64, 74, 107);
+            Place(stormTint.rectTransform, new Rect(0, 0, Art.x, Art.y));
+            clouds = new Image[4];
+            for (int i = 0; i < clouds.Length; i++)
+            {
+                clouds[i] = Img(sea, "CloudShadow" + i, UiDir, "CloudShadow", new Rect(i * 700 - 200, 220 + (i % 2) * 520, 900, 460));
+                clouds[i].color = new Color32(20, 30, 38, 90);
+            }
+            sunGlow = Img(sea, "SunGlow", UiDir, "SunGlow", new Rect(1800, -260, 1000, 1000));
+            sunGlow.color = new Color(1f, 1f, 1f, 0f);
+        }
         var floating = Label(sea, "FloatingText", "", fontTitle, 52, Color.white, new Rect(0, 0, 900, 80), TextAnchor.MiddleCenter);
         floating.gameObject.AddComponent<Outline>().effectColor = new Color(0.06f, 0.2f, 0.24f, 0.9f);
 
@@ -119,6 +173,9 @@ public static class FishingSceneBuilder
         var help = Img(sea, "HelpButton", UiDir, "HudTeal", new Rect(458, 45, 100, 100));
         Label(help.transform, "Mark", "?", fontTitle, 60, Color.white, new Rect(0, 2, 100, 100), TextAnchor.MiddleCenter);
         Clickable(help, c.ShowHowTo);
+        var shop = Img(sea, "ShopButton", ShopDir, "ShopButtonHud", new Rect(586, 49, 210, 92));
+        Label(shop.transform, "Text", "Shop", fontTitle, 38, Ink, new Rect(62, -2, 140, 92), TextAnchor.MiddleCenter);
+        Clickable(shop, c.OpenShop);
 
         var coins = Img(sea, "Coins", UiDir, "HudDark220", new Rect(880, 45, 230, 100));
         Img(coins.transform, "Coin", CoinPath, "Coin", new Rect(22, 20, 60, 60));
@@ -133,11 +190,12 @@ public static class FishingSceneBuilder
         fill.type = Image.Type.Simple;
 
         var task = Img(sea, "Task", UiDir, "HudDark520", new Rect(1600, 36, 560, 120));
-        Label(task.transform, "Title", "TASK 1 · CLEAN THE OCEAN", fontHeavy, 24, SoftTeal, new Rect(26, 12, 380, 36));
+        Label(task.transform, "Title", day2 ? "TASK 2 · CLEAR THE GHOST NETS" : "TASK 1 · CLEAN THE OCEAN",
+            fontHeavy, 24, SoftTeal, new Rect(26, 12, 380, 36));
         var taskText = Label(task.transform, "Progress", "", fontTitle, 34, Color.white, new Rect(26, 50, 380, 56));
         var fishPill = Img(task.transform, "FishPill", UiDir, "HudPill", new Rect(394, 30, 150, 62));
         Img(fishPill.transform, "Fish", ArtDir, "FishAnchovy", new Rect(10, 17, 70, 27));
-        var fishText = Label(fishPill.transform, "Count", "0/5", fontTitle, 32, Ink, new Rect(80, 2, 66, 62));
+        var fishText = Label(fishPill.transform, "Count", day2 ? "2" : "0/5", fontTitle, 32, Ink, new Rect(80, 2, 66, 62));
 
         var tip = Img(sea, "Tooltip", UiDir, "Tooltip", new Rect(890, 176, 780, 140));
         var tooltip = tip.gameObject.AddComponent<CanvasGroup>();
@@ -147,14 +205,23 @@ public static class FishingSceneBuilder
         tipLine.resizeTextForBestFit = true;
         tipLine.resizeTextMaxSize = 32;
         tipLine.resizeTextMinSize = 20;
-        Label(tip.transform, "Rewards", "<color=#B4472A>Trash +5</color> and a healthier ocean · <color=#17777A>Fish +10</color>",
+        Label(tip.transform, "Rewards", day2
+                ? "<color=#B4472A>Ghost net +8</color> · the wind pushes trash ashore, <color=#17777A>catch the close ones first!</color>"
+                : "<color=#B4472A>Trash +5</color> and a healthier ocean · <color=#17777A>fish return to clean water</color>",
             fontBody, 28, Brown, new Rect(32, 78, 716, 44));
 
         // Alt bar
         var equipped = Img(sea, "Equipped", UiDir, "EquippedCard", new Rect(40, 1280, 380, 130));
-        Img(equipped.transform, "Rod", ArtDir, "Rod", new Rect(16, 10, 110, 110));
+        var equippedIcon = Img(equipped.transform, "Rod", ArtDir, "Rod", new Rect(16, 10, 110, 110));
+        equippedIcon.preserveAspect = true;
         Label(equipped.transform, "Label", "EQUIPPED", fontHeavy, 22, Brown, new Rect(140, 22, 230, 30));
-        Label(equipped.transform, "Name", "Grandpa's rod", fontTitle, 38, Ink, new Rect(140, 52, 230, 56));
+        // Ad kod tarafindan yazilir (bos birakilir ki ArtLocalization sabit cevirisini eklemesin)
+        var equippedName = Label(equipped.transform, "Name", "", fontTitle, 38, Ink, new Rect(140, 52, 230, 56));
+        equippedName.resizeTextForBestFit = true;
+        equippedName.resizeTextMaxSize = 38;
+        equippedName.resizeTextMinSize = 24;
+        equippedName.horizontalOverflow = HorizontalWrapMode.Wrap;
+        Clickable(equipped, c.EquippedClicked);
 
         var bagStrip = Img(sea, "Bag", UiDir, "BagStrip", new Rect(800, 1296, 980, 124));
         var bagIcons = new Image[9];
@@ -211,7 +278,7 @@ public static class FishingSceneBuilder
         var space = Img(hr, "Space", UiDir, "KeyCapWide", new Rect(170, 20, 230, 84));
         Label(space.transform, "Text", "Space", fontTitle, 36, Ink, new Rect(0, -6, 230, 84), TextAnchor.MiddleCenter);
         Label(hr, "Text", "Cast your rod", fontTitle, 44, Ink, new Rect(430, 12, 790, 60));
-        Label(hr, "Sub", "or click on trash or a fish that is close enough", fontBody, 28, Brown, new Rect(430, 70, 790, 40));
+        Label(hr, "Sub", "or click on trash that is close enough", fontBody, 28, Brown, new Rect(430, 70, 790, 40));
         CommonRows(desktop);
 
         var mobileRows = Group(howCard.transform, "MobileRows");
@@ -223,7 +290,7 @@ public static class FishingSceneBuilder
         var rodIcon = Img(hr, "Rod", UiDir, "RodButton", new Rect(30, 6, 116, 116));
         Img(rodIcon.transform, "Icon", ArtDir, "Rod", new Rect(18, 18, 80, 80));
         Label(hr, "Text", "Tap the rod button to cast", fontTitle, 44, Ink, new Rect(190, 12, 1030, 60));
-        Label(hr, "Sub", "or tap on trash or a fish that is close enough", fontBody, 28, Brown, new Rect(190, 70, 1030, 40));
+        Label(hr, "Sub", "or tap on trash that is close enough", fontBody, 28, Brown, new Rect(190, 70, 1030, 40));
         CommonRows(mobileRows);
 
         var go = Img(howCard.transform, "Go", UiDir, "GoButton", new Rect(470, 826, 460, 124));
@@ -231,95 +298,32 @@ public static class FishingSceneBuilder
         Clickable(go, c.CloseHowTo);
         howTo.gameObject.SetActive(false);
 
-        // ================= Gorev 2: ayristirma =================
-        var sortPage = Page(canvasGo.transform, "SortPage", "Sort", out var yard);
-        var sorter = sortPage.gameObject.AddComponent<SortController>();
-        Img(yard, "TopBar", UiDir, "TopBar", new Rect(0, 0, 2560, 150));
-        var yMenu = Img(yard, "MenuButton", UiDir, "HudTeal", new Rect(40, 20, 110, 110));
-        Img(yMenu.transform, "Icon", UiDir, "IconWaves", new Rect(23, 23, 64, 64));
-        Clickable(yMenu, c.BackToMenu);
-        Label(yard, "Brand", "Tidework", fontTitle, 56, Gold, new Rect(176, 14, 400, 70));
-        Label(yard, "Place", "Recycling yard · Day 1", fontHeavy, 28, Color.white, new Rect(176, 84, 520, 40));
-        var taskPill = Img(yard, "TaskPill", UiDir, "TaskPill", new Rect(1020, 27, 520, 96));
-        Label(taskPill.transform, "Text", "Task 2 · Sort the catch", fontTitle, 38, Color.white, new Rect(0, 0, 520, 96), TextAnchor.MiddleCenter);
-        Img(yard, "Track", UiDir, "BarTrack", new Rect(1880, 66, 300, 18));
-        Img(yard, "Fill", UiDir, "BarFill", new Rect(1880, 66, 300, 18));
-        Label(yard, "Health", "100%", fontTitle, 36, Color.white, new Rect(2190, 50, 110, 50));
-        var yCoins = Img(yard, "Coins", UiDir, "HudDark220", new Rect(2300, 25, 230, 100));
-        Img(yCoins.transform, "Coin", CoinPath, "Coin", new Rect(22, 20, 60, 60));
-        var yCoinText = Label(yCoins.transform, "Count", "0", fontTitle, 48, Color.white, new Rect(96, 2, 130, 100));
-
-        var bins = Img(yard, "Bins", UiDir, "BinsPanel", new Rect(60, 190, 680, 1170));
-        Label(bins.transform, "Title", "Recycling bins", fontHand, 70, Ink, new Rect(40, 16, 600, 96));
-        var binRows = new Image[5];
-        var binCounts = new Text[5];
-        string[] binIcons = { "BinMetal", "BinGlass", "BinPaper", "BinPlastic", "BinHousehold" };
-        for (int i = 0; i < 5; i++)
+        GameObject babyPrompt = null;
+        RectTransform babyCard = null;
+        Image babyFish = null;
+        Text babyText = null;
+        if (day2)
         {
-            var row = binRows[i] = Img(bins.transform, "Bin" + i, UiDir, "BinRow", new Rect(40, 122 + i * 204, 600, 186));
-            row.raycastTarget = true;
-            var b = row.gameObject.AddComponent<Button>();
-            var bc = b.colors;
-            bc.highlightedColor = new Color(0.95f, 0.95f, 0.92f, 1f);
-            bc.pressedColor = new Color(0.85f, 0.85f, 0.85f, 1f);
-            b.colors = bc;
-            row.gameObject.AddComponent<MenuButtonFx>().hoverScale = 1.03f;
-            UnityEventTools.AddIntPersistentListener(b.onClick, sorter.Choose, i);
-            Img(row.transform, "Icon", UiDir, binIcons[i], new Rect(24, 28, 110, 130));
-            var name = Label(row.transform, "Name", TrashCatalog.BinNames[i], fontTitle, 46, Ink, new Rect(150, 30, 340, 64));
-            name.resizeTextForBestFit = true;
-            name.resizeTextMaxSize = 46;
-            name.resizeTextMinSize = 28;
-            name.horizontalOverflow = HorizontalWrapMode.Wrap;
-            Label(row.transform, "Hint", TrashCatalog.BinHints[i], fontBody, 26, Brown, new Rect(150, 98, 360, 44));
-            var count = Img(row.transform, "Count", UiDir, binIcons[i] + "Count", new Rect(504, 61, 64, 64));
-            binCounts[i] = Label(count.transform, "Text", "0", fontTitle, 32, Color.white, new Rect(0, 0, 64, 64), TextAnchor.MiddleCenter);
+            var dim = MakeImage(sea, "BabyPrompt", null);
+            dim.color = new Color(0.02f, 0.08f, 0.1f, 0.5f);
+            dim.raycastTarget = true;
+            Place(dim.rectTransform, new Rect(-400, -400, Art.x + 800, Art.y + 800));
+            var card = Img(dim.transform, "Card", UiDir, "FinishCard", new Rect(400 + 730, 400 + 340, 1100, 760));
+            Label(card.transform, "Title", "Baby fish!", fontTitle, 84, Ink, new Rect(0, 50, 1100, 110), TextAnchor.MiddleCenter);
+            babyFish = Img(card.transform, "Fish", ArtDir, "FishAnchovy", new Rect(420, 170, 260, 130));
+            babyFish.preserveAspect = true;
+            babyText = Label(card.transform, "Line", "", fontHeavy, 40, Brown, new Rect(90, 320, 920, 200), TextAnchor.MiddleCenter);
+            babyText.horizontalOverflow = HorizontalWrapMode.Wrap;
+            var release = Img(card.transform, "Release", UiDir, "GoButton", new Rect(90, 570, 440, 124));
+            Label(release.transform, "Text", "Release", fontTitle, 52, Color.white, new Rect(0, -6, 440, 124), TextAnchor.MiddleCenter);
+            Clickable(release, c.ReleaseBaby);
+            var keep = Img(card.transform, "Keep", UiDir, "FinishButton", new Rect(570, 570, 440, 124));
+            Label(keep.transform, "Text", "Keep", fontTitle, 52, new Color32(70, 48, 30, 255), new Rect(0, -6, 440, 124), TextAnchor.MiddleCenter);
+            Clickable(keep, c.KeepBaby);
+            babyPrompt = dim.gameObject;
+            babyCard = card.rectTransform;
+            babyPrompt.SetActive(false);
         }
-
-        var itemIndex = Label(yard, "ItemIndex", "", fontHeavy, 34, new Color32(30, 120, 124, 255), new Rect(780, 184, 1000, 50), TextAnchor.MiddleCenter);
-        var itemName = Label(yard, "ItemName", "", fontTitle, 84, Ink, new Rect(780, 232, 1000, 110), TextAnchor.MiddleCenter);
-        var question = Label(yard, "Question", "", fontBody, 36, Brown, new Rect(780, 346, 1000, 56), TextAnchor.MiddleCenter);
-        Img(yard, "Plate", UiDir, "ItemPlate", new Rect(980, 420, 600, 600));
-        var itemImage = Img(yard, "Item", ArtDir, "TrashWaterBottle", new Rect(1120, 640, 320, 120));
-        itemImage.preserveAspect = true;
-
-        var score = Img(yard, "Score", UiDir, "ScoreCard", new Rect(1890, 190, 610, 300));
-        Label(score.transform, "Title", "SCORE", fontHeavy, 26, SoftTeal, new Rect(34, 18, 300, 40));
-        var rightBox = Img(score.transform, "Right", UiDir, "ScoreRight", new Rect(34, 66, 262, 150));
-        Label(rightBox.transform, "Label", "Right · +3", fontHeavy, 26, Color.white, new Rect(20, 12, 230, 40));
-        var rightCount = Label(rightBox.transform, "Count", "0", fontTitle, 60, Color.white, new Rect(20, 56, 230, 80));
-        var wrongBox = Img(score.transform, "Wrong", UiDir, "ScoreWrong", new Rect(314, 66, 262, 150));
-        Label(wrongBox.transform, "Label", "Wrong · -2", fontHeavy, 26, Color.white, new Rect(20, 12, 230, 40));
-        var wrongCount = Label(wrongBox.transform, "Count", "0", fontTitle, 60, Color.white, new Rect(20, 56, 230, 80));
-        var soFar = Label(score.transform, "SoFar", "", fontTitle, 40, Gold, new Rect(34, 228, 540, 56));
-
-        var bagPanel = Img(yard, "BagPanel", UiDir, "BagPanel", new Rect(1890, 520, 610, 790));
-        var bagTitle = Label(bagPanel.transform, "Title", "", fontHeavy, 26, Brown, new Rect(30, 20, 550, 44));
-        var tiles = new Image[15];
-        for (int i = 0; i < tiles.Length; i++)
-        {
-            var tile = tiles[i] = Img(bagPanel.transform, "Tile" + i, UiDir, "BagTile", new Rect(30 + (i % 3) * 186, 78 + (i / 3) * 136, 160, 110));
-            var ic = Img(tile.transform, "Icon", ArtDir, "TrashTinCan", new Rect(14, 10, 132, 90));
-            ic.preserveAspect = true;
-        }
-        var sortFloat = Label(yard, "FloatingText", "", fontTitle, 72, Color.white, new Rect(0, 0, 300, 100), TextAnchor.MiddleCenter);
-
-        // Sonuc karti
-        var finish = MakeImage(yard, "FinishOverlay", null);
-        finish.color = new Color(0.02f, 0.08f, 0.1f, 0.6f);
-        finish.raycastTarget = true;
-        Place(finish.rectTransform, new Rect(-400, -400, Art.x + 800, Art.y + 800));
-        var card = Img(finish.transform, "Card", UiDir, "FinishCard", new Rect(400 + 730, 400 + 340, 1100, 760));
-        Label(card.transform, "Title", "All sorted!", fontTitle, 100, Ink, new Rect(0, 50, 1100, 130), TextAnchor.MiddleCenter);
-        var finishCoins = Label(card.transform, "Coins", "", fontTitle, 72, new Color32(200, 140, 30, 255), new Rect(0, 190, 1100, 100), TextAnchor.MiddleCenter);
-        var finishScore = Label(card.transform, "Score", "", fontHeavy, 42, Brown, new Rect(0, 300, 1100, 60), TextAnchor.MiddleCenter);
-        var thanks = Label(card.transform, "Thanks", "The beach is cleaner. The turtles thank you!", fontHand, 60,
-            new Color32(110, 62, 40, 255), new Rect(80, 380, 940, 150), TextAnchor.MiddleCenter);
-        thanks.horizontalOverflow = HorizontalWrapMode.Wrap;
-        var done = Img(card.transform, "Done", UiDir, "FinishButton", new Rect(290, 580, 520, 124));
-        Label(done.transform, "Text", "Back to menu", fontTitle, 50, Color.white, new Rect(0, -6, 520, 124), TextAnchor.MiddleCenter);
-        Clickable(done, sorter.Done);
-        finish.gameObject.SetActive(false);
 
         // ================= Ekran gecisi =================
         var faderImg = MakeImage(canvasGo.transform, "ScreenFader", null);
@@ -329,7 +333,7 @@ public static class FishingSceneBuilder
         var fader = faderImg.gameObject.AddComponent<CanvasGroup>();
         fader.alpha = 1f;
 
-        SetRefs(c, ("seaPage", seaPage), ("sortPage", sortPage), ("screenFader", fader), ("sort", sorter),
+        SetRefs(c, ("seaPage", seaPage), ("screenFader", fader),
             ("boat", boat.rectTransform), ("itemsParent", items), ("itemTemplate", template), ("murk", murk),
             ("line", line.rectTransform), ("bobber", bobber.rectTransform), ("splash", splash.rectTransform),
             ("floatingText", floating), ("coinText", coinText), ("healthFill", fill.rectTransform),
@@ -338,31 +342,38 @@ public static class FishingSceneBuilder
             ("mobileControls", mobile.gameObject), ("joystick", joystick),
             ("waveTemplate", waveTemplate), ("wakeTemplate", wakeTemplate),
             ("howTo", howTo.gameObject), ("howToCard", howCard.rectTransform),
-            ("desktopRows", desktop.gameObject), ("mobileRows", mobileRows.gameObject));
+            ("desktopRows", desktop.gameObject), ("mobileRows", mobileRows.gameObject),
+            ("shopButton", shop.gameObject), ("equippedIcon", equippedIcon), ("equippedName", equippedName),
+            ("rodIcon", LoadSprite("Rod", ArtDir)), ("sturdyRodIcon", LoadSprite("ItemSturdyRod", ShopDir)),
+            ("netIcon", LoadSprite("ItemBigNet", ShopDir)), ("netCircle", netCircle.rectTransform),
+            ("stormTint", stormTint), ("sunGlow", sunGlow), ("babyPrompt", babyPrompt),
+            ("babyPromptCard", babyCard), ("babyPromptFish", babyFish), ("babyPromptText", babyText));
+        SetArray(c, "cloudShadows", clouds);
+        var cso = new SerializedObject(c);
+        cso.FindProperty("stormMode").boolValue = day2;
+        cso.ApplyModifiedPropertiesWithoutUndo();
         SetArray(c, "bagIcons", bagIcons);
         SetArray(c, "trashSprites", TrashCatalog.Trash.Select(t => (Object)LoadSprite(t.sprite, ArtDir)).ToArray());
         SetArray(c, "fishSprites", TrashCatalog.FishSprites.Select(f => (Object)LoadSprite(f, ArtDir)).ToArray());
 
-        SetRefs(sorter, ("itemIndex", itemIndex), ("itemName", itemName), ("question", question), ("itemImage", itemImage),
-            ("rightCount", rightCount), ("wrongCount", wrongCount), ("coinsSoFar", soFar), ("coinText", yCoinText),
-            ("bagTitle", bagTitle), ("floatingText", sortFloat), ("finishOverlay", finish.gameObject),
-            ("finishCard", card.rectTransform), ("finishCoins", finishCoins), ("finishScore", finishScore),
-            ("rowNormal", LoadSprite("BinRow", UiDir)), ("rowRight", LoadSprite("BinRowRight", UiDir)),
-            ("rowWrong", LoadSprite("BinRowWrong", UiDir)));
-        SetArray(sorter, "binRows", binRows);
-        SetArray(sorter, "binCounts", binCounts);
-        SetArray(sorter, "bagTiles", tiles);
-        sortPage.gameObject.SetActive(false);
-
-        Directory.CreateDirectory(Path.GetDirectoryName(ScenePath));
+        Directory.CreateDirectory(Path.GetDirectoryName(scenePath));
         ArtLocalization.Apply(canvasGo.transform);
-        EditorSceneManager.SaveScene(scene, ScenePath);
-        AddToBuildSettings();
-        EditorPrefs.SetInt(VersionKey, BuilderVersion);
-        Debug.Log("[Tideworks] Fishing scene created: " + ScenePath);
+        EditorSceneManager.SaveScene(scene, scenePath);
+        AddToBuildSettings(scenePath);
+        EditorPrefs.SetInt(day2 ? Day2VersionKey : VersionKey, BuilderVersion);
+        Debug.Log("[Tideworks] Sea scene created: " + scenePath);
     }
 
     // ---------------- Yardimcilar ----------------
+
+    static void LoadFonts()
+    {
+        var legacy = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        fontBody = AssetDatabase.LoadAssetAtPath<Font>(FontDir + "Nunito-Bold.ttf") ?? legacy;
+        fontHeavy = AssetDatabase.LoadAssetAtPath<Font>(FontDir + "Nunito-ExtraBold.ttf") ?? legacy;
+        fontTitle = AssetDatabase.LoadAssetAtPath<Font>(FontDir + "Baloo2-ExtraBold.ttf") ?? legacy;
+        fontHand = AssetDatabase.LoadAssetAtPath<Font>(FontDir + "Caveat-Bold.ttf") ?? legacy;
+    }
 
     static RectTransform Group(Transform parent, string name)
     {
@@ -389,7 +400,7 @@ public static class FishingSceneBuilder
         var trash = Img(row, "Trash", ArtDir, "TrashWaterBottle", new Rect(20, 30, 139, 51));
         trash.preserveAspect = true;
         Img(row, "Fish", ArtDir, "FishAnchovy", new Rect(170, 30, 150, 57)).preserveAspect = true;
-        var reward = Label(row, "Text", "<color=#B4472A>Trash +5</color> coins and a cleaner ocean · <color=#17777A>Fish +10</color> coins",
+        var reward = Label(row, "Text", "<color=#B4472A>Trash +5</color> coins · clean water brings the <color=#17777A>fish</color> back",
             fontHeavy, 32, Ink, new Rect(350, 14, 870, 100));
         reward.horizontalOverflow = HorizontalWrapMode.Wrap;
         row = HowRow(group, 3);
@@ -400,21 +411,21 @@ public static class FishingSceneBuilder
         rules.horizontalOverflow = HorizontalWrapMode.Wrap;
     }
 
-    static void AddToBuildSettings()
+    static void AddToBuildSettings(string scenePath)
     {
-        var scenes = EditorBuildSettings.scenes.Where(s => s.path != ScenePath).ToList();
+        var scenes = EditorBuildSettings.scenes.Where(s => s.path != scenePath).ToList();
         int after = scenes.FindIndex(s => s.path == "Assets/Scenes/Workshop.unity");
-        scenes.Insert(after + 1, new EditorBuildSettingsScene(ScenePath, true));
+        scenes.Insert(after + 1, new EditorBuildSettingsScene(scenePath, true));
         EditorBuildSettings.scenes = scenes.ToArray();
     }
 
     /// <summary>Sayfa: bulanik dolgu (Cover) + 2560x1440 artboard (Contain) + zemin gorseli.</summary>
-    static CanvasGroup Page(Transform parent, string name, string art, out Transform artboard)
+    static CanvasGroup Page(Transform parent, string name, string art, out Transform artboard, string dir = UiDir)
     {
         var go = new GameObject(name, typeof(RectTransform), typeof(CanvasGroup));
         go.transform.SetParent(parent, false);
         Stretch((RectTransform)go.transform);
-        var backdrop = MakeImage(go.transform, "Backdrop", LoadSprite(art + "Backdrop", UiDir));
+        var backdrop = MakeImage(go.transform, "Backdrop", LoadSprite(art + "Backdrop", dir));
         var fit = backdrop.gameObject.AddComponent<ArtboardFitter>();
         fit.artSize = Art;
         fit.mode = ArtboardFitter.FitMode.Cover;
@@ -423,9 +434,20 @@ public static class FishingSceneBuilder
         board.SetParent(go.transform, false);
         board.GetComponent<ArtboardFitter>().artSize = Art;
         board.sizeDelta = Art;
-        Img(board, "Background", UiDir, art + "Background", new Rect(0, 0, Art.x, Art.y));
+        Img(board, "Background", dir, art + "Background", new Rect(0, 0, Art.x, Art.y));
         artboard = board;
         return go.GetComponent<CanvasGroup>();
+    }
+
+    /// <summary>Kumsalda tiklanabilir nesne (lamba, sezlong, yuva...): renk tonu yok, dinleyiciyi controller ekler.</summary>
+    static Button BeachButton(Transform parent, string name, Rect r)
+    {
+        var img = Img(parent, name, BeachDir, name.TrimEnd('0', '1', '2'), r);
+        img.raycastTarget = true;
+        var b = img.gameObject.AddComponent<Button>();
+        b.transition = Selectable.Transition.None;
+        img.gameObject.AddComponent<MenuButtonFx>().hoverScale = 1.05f;
+        return b;
     }
 
     static Image Img(Transform parent, string name, string dir, string sprite, Rect r)

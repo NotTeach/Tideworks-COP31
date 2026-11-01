@@ -19,6 +19,15 @@ public class LocalizedImage : MonoBehaviour
         turkish = tr;
     }
 
+    /// <summary>Calisirken baska bir gorsele gec (or. 2. gunun zemini); dil hemen uygulanir.</summary>
+    public void SetSprites(Sprite en, Sprite tr)
+    {
+        english = en;
+        turkish = tr;
+        if (!image) image = GetComponent<Image>();
+        Apply();
+    }
+
     void Awake() => image = GetComponent<Image>();
 
     void OnEnable()

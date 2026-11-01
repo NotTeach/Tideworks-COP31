@@ -15,7 +15,7 @@ public class MainMenuController : MonoBehaviour
     [Tooltip("Start: once dedenin notu / yukleme ekrani")]
     [SerializeField] string introSceneName = "Intro";
     [Tooltip("Continue: dogrudan oyun")]
-    [SerializeField] string gameSceneName = "SampleScene";
+    [SerializeField] string gameSceneName = "Workshop";
 
     [Header("Sayfalar")]
     [SerializeField] CanvasGroup mainPage;
@@ -38,7 +38,7 @@ public class MainMenuController : MonoBehaviour
 
     [Header("Ses (Assets/Tideworks/Resources/TideworksSes)")]
     [SerializeField] bool playMenuAudio = true;
-    [SerializeField] string menuMusic = Tideworks.Ses.MuzikAnaTema;
+    [SerializeField] string menuMusic = Tideworks.Ses.MuzikAkdeniz;
     [SerializeField] string menuAmbience = Tideworks.Ses.AmbiyansDeniz;
 
     CanvasGroup currentPage;

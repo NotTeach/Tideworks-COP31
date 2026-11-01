@@ -973,7 +973,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MainMenuController
   introSceneName: Intro
-  gameSceneName: SampleScene
+  gameSceneName: Workshop
   mainPage: {fileID: 1156241355}
   howToPlayPage: {fileID: 1524951337}
   settingsPage: {fileID: 799806315}
@@ -986,7 +986,7 @@ MonoBehaviour:
   pageFade: 0.25
   screenFade: 0.7
   playMenuAudio: 1
-  menuMusic: muzik_ana_tema_loop
+  menuMusic: muzik_akdeniz_sakin_loop
   menuAmbience: ambiyans_deniz_loop
 --- !u!114 &86355600
 MonoBehaviour:
