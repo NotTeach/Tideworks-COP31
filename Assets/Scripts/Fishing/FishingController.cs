@@ -85,8 +85,12 @@ public class FishingController : MonoBehaviour
     [SerializeField] Image waveTemplate;
     [SerializeField] int waveCount = 26;
     [SerializeField] Image wakeTemplate;
-    [Tooltip("Teknenin dalgada yalpalamasi (derece)")]
-    [SerializeField] float rockAngle = 3f;
+    [Tooltip("Teknenin dalgada yana yatmasi (derece)")]
+    [SerializeField] float rollDegrees = 7f;
+    [Tooltip("Dalgada inip kalkma (artboard pikseli)")]
+    [SerializeField] float bobPixels = 9f;
+    [Tooltip("Burnun dalgaya binip inmesi (olcek orani)")]
+    [SerializeField] float pitchAmount = 0.045f;
 
     [Header("Nasil oynanir")]
     [SerializeField] GameObject howTo;
@@ -251,8 +255,8 @@ public class FishingController : MonoBehaviour
         {
             if (kb.upArrowKey.isPressed || kb.wKey.isPressed) throttle += 1f;
             if (kb.downArrowKey.isPressed || kb.sKey.isPressed) throttle -= 1f;
-            if (kb.leftArrowKey.isPressed || kb.aKey.isPressed) steer += 1f;
-            if (kb.rightArrowKey.isPressed || kb.dKey.isPressed) steer -= 1f;
+            if (kb.leftArrowKey.isPressed || kb.aKey.isPressed) steer -= 1f;
+            if (kb.rightArrowKey.isPressed || kb.dKey.isPressed) steer += 1f;
         }
 
         // Joystick / gamepad: cubugun gosterdigi yone don ve oraya kurek cek
@@ -531,13 +535,16 @@ public class FishingController : MonoBehaviour
     void PlaceBoat()
     {
         float t = Time.time;
-        float sway = GameSettings.ReduceMotion ? 0f : 1f + 0.6f * Mathf.Abs(forwardSpeed) / maxSpeed;
-        float roll = (Mathf.Sin(t * 1.7f) * 0.65f + Mathf.Sin(t * 0.63f + 1.1f) * 0.35f) * rockAngle * sway;
-        float bob = Mathf.Sin(t * 2.1f + 0.4f) * 3f * sway;
-        SetPos(boat, boatPos + new Vector2(0, bob));
-        boat.localRotation = Quaternion.Euler(0, 0, boatAngle - 180f + roll);
-        float pitch = 1f + 0.018f * Mathf.Sin(t * 2.4f) * sway;
-        boat.localScale = new Vector3(1f, pitch, 1f);
+        // Dururken de dalgada sallanir; hizlaninca biraz daha
+        float sway = GameSettings.ReduceMotion ? 0f : 1f + 0.5f * Mathf.Abs(forwardSpeed) / maxSpeed;
+        float roll = (Mathf.Sin(t * 1.5f) * 0.65f + Mathf.Sin(t * 0.55f + 1.1f) * 0.35f) * rollDegrees * sway;
+        float bob = (Mathf.Sin(t * 1.9f + 0.4f) * 0.7f + Mathf.Sin(t * 0.8f) * 0.3f) * bobPixels * sway;
+        float drift = Mathf.Sin(t * 0.7f + 2f) * bobPixels * 0.5f * sway;
+        SetPos(boat, boatPos + new Vector2(drift, bob));
+        // Sprite'ta burun solda (-x): hareket yonu "heading" ise sprite heading + 180 donmeli
+        boat.localRotation = Quaternion.Euler(0, 0, boatAngle + roll);
+        float pitch = Mathf.Sin(t * 2.2f + 0.9f) * pitchAmount * sway;
+        boat.localScale = new Vector3(1f + pitch * 0.5f, 1f - pitch, 1f);
     }
 
     // ---------------- Dalgalar ve iz ----------------
