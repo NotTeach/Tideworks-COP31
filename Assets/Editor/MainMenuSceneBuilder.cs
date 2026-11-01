@@ -26,7 +26,7 @@ public static class MainMenuSceneBuilder
     const string SpriteDir = "Assets/Sprites/MainMenu/";
     const string SettingsDir = "Assets/Sprites/Settings/";
     const string FontDir = "Assets/Fonts/";
-    const string AutoBuildKey = "Tideworks.MainMenuAutoBuildTried.v7";
+    const string AutoBuildKey = "Tideworks.MainMenuAutoBuild.v7";
     static string VersionKey => "Tideworks.MainMenuBuilderVersion." + PlayerSettings.productGUID;
 
     // Gorseldeki konumlar (piksel, sol ust koseden): x, y, genislik, yukseklik
@@ -64,9 +64,7 @@ public static class MainMenuSceneBuilder
     static MainMenuSceneBuilder()
     {
         if (File.Exists(ScenePath) && EditorPrefs.GetInt(VersionKey, 1) >= BuilderVersion) return;
-        if (SessionState.GetBool(AutoBuildKey, false)) return;
-        SessionState.SetBool(AutoBuildKey, true);
-        EditorApplication.delayCall += () => Build(askToSave: true);
+        SceneAutoBuild.Request(AutoBuildKey, () => Build(askToSave: true));
     }
 
     [MenuItem("Tideworks/Rebuild Main Menu Scene")]

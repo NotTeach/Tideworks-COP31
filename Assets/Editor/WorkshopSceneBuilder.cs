@@ -22,11 +22,11 @@ using static MainMenuSceneBuilder;
 [InitializeOnLoad]
 public static partial class WorkshopSceneBuilder
 {
-    const int BuilderVersion = 4;
+    const int BuilderVersion = 6;
     const string ScenePath = "Assets/Scenes/Workshop.unity";
     const string SpriteDir = "Assets/Sprites/Workshop/";
     const string FontDir = "Assets/Fonts/";
-    const string AutoBuildKey = "Tideworks.WorkshopAutoBuildTried.v4";
+    const string AutoBuildKey = "Tideworks.WorkshopAutoBuild.v6";
     static string VersionKey => "Tideworks.WorkshopBuilderVersion." + PlayerSettings.productGUID;
 
     // Dis cephe ve atolye tasarimi 1280x720 (artboard 2x); gun plani 2752x1536 (artboard 1x).
@@ -46,6 +46,10 @@ public static partial class WorkshopSceneBuilder
     static readonly Color BadgeInk = new Color32(251, 248, 241, 255);
 
     static readonly Color QuestTeal = new Color32(16, 70, 80, 255);
+    static readonly Color RewardInk = new Color32(18, 62, 72, 255);
+    static readonly Color QuoteInk = new Color32(110, 62, 40, 255);
+    static readonly Color Yellow = new Color32(244, 192, 74, 255);
+    static readonly string GameProgressStart = GameProgress.StartCoins.ToString();
 
     // Radyo calistiktan sonra Hatice Teyze (her biri ayri diyalog kutusu)
     static readonly string[] AfterRepairLines =
@@ -106,9 +110,7 @@ public static partial class WorkshopSceneBuilder
     static WorkshopSceneBuilder()
     {
         if (File.Exists(ScenePath) && EditorPrefs.GetInt(VersionKey, 0) >= BuilderVersion) return;
-        if (SessionState.GetBool(AutoBuildKey, false)) return;
-        SessionState.SetBool(AutoBuildKey, true);
-        EditorApplication.delayCall += () => Build(askToSave: true);
+        SceneAutoBuild.Request(AutoBuildKey, () => Build(askToSave: true));
     }
 
     [MenuItem("Tideworks/Rebuild Workshop Scene")]
@@ -260,47 +262,79 @@ public static partial class WorkshopSceneBuilder
             return img;
         }).ToArray();
 
-        // Odul karti
+        // Odul karti (ustte "120 > 160" sayac hapi)
         var rewardOverlay = Dim(shop, "RewardOverlay");
-        var reward = MakeImage(rewardOverlay.transform, "RewardCard", LoadSprite("RewardCard", SpriteDir));
-        Place(reward.rectTransform, new Rect(400 + 1280 - 536, 400 + 640 - 316, 1072, 632));
-        var rt = reward.transform;
-        Label(rt, "Title", "Repair complete!", fontTitle, 76, QuestTeal, new Rect(36, 60, 1000, 120), TextAnchor.MiddleCenter);
-        var rewardCoin = MakeImage(rt, "Coin", LoadSprite("Coin", SpriteDir));
-        Place(rewardCoin.rectTransform, Centered(536, 248, 72));
-        Label(rt, "Reward", "+40 coins · Hatice Teyze is now your helper", fontHeavy, 40, DialogueInk,
-            new Rect(66, 292, 940, 64), TextAnchor.MiddleCenter);
-        var quote = Label(rt, "Quote", "“Fixing an old thing means less waste than buying a new one.”", fontHand, 54,
-            QuestTitleInk, new Rect(96, 372, 880, 170), TextAnchor.MiddleCenter);
-        quote.horizontalOverflow = HorizontalWrapMode.Wrap;
+        var pill = MakeImage(rewardOverlay.transform, "CoinPill", LoadSprite("CounterPill", SpriteDir));
+        Place(pill.rectTransform, new Rect(400 + 1280 - 210, 400 + 62, 420, 110));
+        var pillCoin = MakeImage(pill.transform, "Coin", LoadSprite("Coin", SpriteDir));
+        Place(pillCoin.rectTransform, new Rect(32, 27, 56, 56));
+        var pillFrom = Label(pill.transform, "From", GameProgressStart, fontTitle, 56, Color.white, new Rect(100, 2, 100, 110));
+        var pillArrow = MakeImage(pill.transform, "Arrow", LoadSprite("ArrowWhite", SpriteDir));
+        Place(pillArrow.rectTransform, new Rect(206, 35, 56, 35));
+        var pillTo = Label(pill.transform, "To", GameProgressStart, fontTitle, 56, Color.white, new Rect(272, 2, 130, 110));
 
-        // "Let's Save the Seas!" paneli
+        var reward = MakeImage(rewardOverlay.transform, "RewardCard", LoadSprite("RewardCard", SpriteDir));
+        Place(reward.rectTransform, new Rect(400 + 1280 - 530, 400 + 200, 1060, 1160));
+        var rt = reward.transform;
+        var pile = MakeImage(rt, "CoinPile", LoadSprite("CoinPile", SpriteDir));
+        pile.SetNativeSize();
+        Place(pile.rectTransform, new Rect(530 - pile.rectTransform.sizeDelta.x / 2, 66, pile.rectTransform.sizeDelta.x, pile.rectTransform.sizeDelta.y));
+        Pulse(pile, 1f, 1f, 0.5f, 0f, 0.04f);
+        Label(rt, "Title", "Repair complete!", fontTitle, 96, RewardInk, new Rect(40, 396, 980, 130), TextAnchor.MiddleCenter);
+        var coinsPill = MakeImage(rt, "CoinsPill", LoadSprite("RewardPillCoins", SpriteDir));
+        Place(coinsPill.rectTransform, new Rect(370, 534, 320, 104));
+        Label(coinsPill.transform, "Text", "+40 coins", fontTitle, 56, Yellow, new Rect(0, 2, 320, 104), TextAnchor.MiddleCenter);
+        var helperPill = MakeImage(rt, "HelperPill", LoadSprite("RewardPillHelper", SpriteDir));
+        Place(helperPill.rectTransform, new Rect(230, 664, 600, 86));
+        var helper = Label(helperPill.transform, "Text", "Hatice Teyze is now your helper", fontTitle, 40, Color.white,
+            new Rect(20, 2, 560, 86), TextAnchor.MiddleCenter);
+        helper.resizeTextForBestFit = true;
+        helper.resizeTextMaxSize = 40;
+        helper.resizeTextMinSize = 24;
+        var quote = Label(rt, "Quote", "“Fixing an old thing means less waste than buying a new one.”", fontHand, 64,
+            QuoteInk, new Rect(90, 770, 880, 170), TextAnchor.MiddleCenter);
+        quote.horizontalOverflow = HorizontalWrapMode.Wrap;
+        quote.lineSpacing = 0.9f;
+        CardButton(rt, "Continue", "ButtonOrange", new Rect(350, 958, 360, 120), "Continue", Color.white, 56, c.RewardContinue,
+            SpriteDir, fontTitle);
+
+        // "Let's Save the Seas!" paneli: solda plaj resmi, sagda yazilar ve butonlar
         var missionOverlay = Dim(shop, "MissionOverlay");
-        var mission = MakeImage(missionOverlay.transform, "MissionCard", LoadSprite("MissionCard", SpriteDir));
-        Place(mission.rectTransform, new Rect(400 + 1280 - 736, 400 + 720 - 526, 1472, 1052));
+        var mission = MakeImage(missionOverlay.transform, "MissionFrame", LoadSprite("MissionFrame", SpriteDir));
+        Place(mission.rectTransform, new Rect(400 + 1280 - 1124, 400 + 740 - 634, 2248, 1268));
         var mt = mission.transform;
-        Label(mt, "Title", "Let's Save the Seas!", fontTitle, 84, QuestTeal, new Rect(36, 64, 1400, 130), TextAnchor.MiddleCenter);
-        var body = Label(mt, "Body", "Every piece of trash that washes ashore blocks a caretta hatchling's way to the sea. " +
+        var beach = MakeImage(mt, "BeachArt", LoadSprite("BeachArt", SpriteDir));
+        Place(beach.rectTransform, new Rect(84, 84, 1000, 1100));
+        var right = MakeImage(mt, "Card", LoadSprite("MissionCardRight", SpriteDir));
+        Place(right.rectTransform, new Rect(1114, 74, 1050, 1120));
+        var ct = right.transform;
+        var mTitle = Label(ct, "Title", "Let's Save the Seas!", fontTitle, 108, RewardInk, new Rect(60, 40, 930, 270), TextAnchor.UpperLeft);
+        mTitle.horizontalOverflow = HorizontalWrapMode.Wrap;
+        mTitle.lineSpacing = 0.8f;
+        var body = Label(ct, "Body", "Every piece of trash that washes ashore blocks a caretta hatchling's way to the sea. " +
             "Clean the sea, tidy up the beach and help the hatchlings reach the water.", fontBody, 40, DialogueInk,
-            new Rect(136, 240, 1200, 200), TextAnchor.MiddleCenter);
+            new Rect(60, 312, 930, 236), TextAnchor.UpperLeft);
+        body.fontSize = 38;
         body.horizontalOverflow = HorizontalWrapMode.Wrap;
-        body.lineSpacing = 1.1f;
-        var bullets = new[]
+        body.lineSpacing = 1.08f;
+        var rows = new[] { ("Teal", "IconBoatWhite", "Clean the sea"), ("Green", "IconRecycleWhite", "Recycle"),
+                           ("Orange", "IconTurtleWhite", "Protect the carettas") };
+        for (int i = 0; i < rows.Length; i++)
         {
-            "<color=#17777A>Clean the sea:</color> collect trash by boat.",
-            "<color=#17777A>Recycle:</color> sort every piece into the right bin.",
-            "<color=#17777A>Protect the carettas:</color> open a safe path from the nests.",
-        };
-        for (int i = 0; i < bullets.Length; i++)
-        {
-            float y = 480 + i * 96;
-            var tick = MakeImage(mt, "Tick" + i, LoadSprite("StepDone", BenchDir));
-            Place(tick.rectTransform, new Rect(220, y + 12, 56, 56));
-            var line = Label(mt, "Bullet" + i, bullets[i], fontHeavy, 40, DialogueInk, new Rect(300, y, 1060, 80));
-            line.supportRichText = true;
+            var (color, icon, text) = rows[i];
+            var row = MakeImage(ct, "Row" + color, LoadSprite("MissionRow" + color, SpriteDir));
+            Place(row.rectTransform, new Rect(60, 560 + i * 136, 930, 120));
+            var ic = MakeImage(row.transform, "Icon", LoadSprite(icon, SpriteDir));
+            Place(ic.rectTransform, new Rect(44, 24, 72, 72));
+            Label(row.transform, "Text", text, fontTitle, 52, Color.white, new Rect(150, 2, 760, 120));
         }
-        CardButton(mt, "HeadOut", "HelpButtonTeal", new Rect(296, 820, 420, 112), "Head out", Color.white, 42, c.MissionHeadOut);
-        CardButton(mt, "Later", "HelpButtonOutline", new Rect(756, 820, 420, 112), "Later", DialogueInk, 42, c.MissionLater);
+        var headOut = CardButton(ct, "HeadOut", "ButtonOrangeWide", new Rect(60, 974, 560, 120), "Head out", Color.white, 54,
+            c.MissionHeadOut, SpriteDir, fontTitle);
+        var hoIcon = MakeImage(headOut.transform, "Icon", LoadSprite("IconBoatWhite", SpriteDir));
+        Place(hoIcon.rectTransform, new Rect(120, 22, 64, 64));
+        headOut.transform.Find("Label").GetComponent<RectTransform>().anchoredPosition += new Vector2(36, 0);
+        CardButton(ct, "Later", "ButtonOutline", new Rect(660, 974, 330, 120), "Later", DialogueInk, 44, c.MissionLater,
+            SpriteDir, fontHeavy);
 
         var coin = MakeImage(shop, "FlyingCoin", LoadSprite("Coin", SpriteDir));
         Place(coin.rectTransform, Centered(0, 0, 64));
@@ -331,8 +365,9 @@ public static partial class WorkshopSceneBuilder
             ("repairCheck", repairCheck.rectTransform), ("repairStrike", repairStrike.rectTransform), ("repairFade", repairFade),
             ("workbenchPage", workbench), ("repair", repair),
             ("nextButton", next), ("dialogueHeadOutButton", dialogueHeadOut),
-            ("rewardCard", reward.rectTransform), ("rewardCoinIcon", rewardCoin.rectTransform), ("coinTemplate", coin),
-            ("coinCounterIcon", coinIcon.rectTransform), ("coinCounter", coinCounter),
+            ("rewardCard", reward.rectTransform), ("rewardCoinIcon", pile.rectTransform), ("coinTemplate", coin),
+            ("counterPillFrom", pillFrom), ("counterPillCoin", pillCoin.rectTransform), ("counterPillTo", pillTo),
+            ("coinCounter", coinCounter),
             ("rewardOverlay", rewardOverlay.gameObject), ("missionOverlay", missionOverlay.gameObject),
             ("missionCard", mission.rectTransform));
         SetArray(c, "floatingSprites", floating);
@@ -471,9 +506,9 @@ public static partial class WorkshopSceneBuilder
 
     /// <summary>Kart / diyalog butonu (Workbench klasorundeki yuvarlak buton gorselleri) + yazi.</summary>
     static Button CardButton(Transform parent, string name, string sprite, Rect r, string label, Color ink, int size,
-        UnityAction onClick)
+        UnityAction onClick, string dir = BenchDir, Font font = null)
     {
-        var img = MakeImage(parent, name, LoadSprite(sprite, BenchDir));
+        var img = MakeImage(parent, name, LoadSprite(sprite, dir));
         img.raycastTarget = true;
         Place(img.rectTransform, r);
         var b = img.gameObject.AddComponent<Button>();
@@ -482,7 +517,7 @@ public static partial class WorkshopSceneBuilder
         colors.fadeDuration = 0.08f;
         b.colors = colors;
         img.gameObject.AddComponent<MenuButtonFx>().hoverScale = 1.04f;
-        var t = Label(img.transform, "Label", label, fontHeavy, size, ink, new Rect(0, -r.height * 0.04f, r.width, r.height),
+        var t = Label(img.transform, "Label", label, font ?? fontHeavy, size, ink, new Rect(0, -r.height * 0.04f, r.width, r.height),
             TextAnchor.MiddleCenter);
         t.resizeTextForBestFit = true;
         t.resizeTextMaxSize = size;
