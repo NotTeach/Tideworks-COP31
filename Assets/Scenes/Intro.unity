@@ -401,7 +401,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bbe1b9b27e97a8f499a49a0b82cbe8b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IntroController
-  gameSceneName: SampleScene
+  gameSceneName: Workshop
   noteLines:
   - {fileID: 1485037718}
   - {fileID: 689841211}

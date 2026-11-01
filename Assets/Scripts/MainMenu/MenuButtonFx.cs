@@ -30,7 +30,8 @@ public class MenuButtonFx : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     {
         bool active = (hovered || selected) && (selectable == null || selectable.IsInteractable());
         var target = baseScale * (active ? hoverScale : 1f);
-        transform.localScale = Vector3.Lerp(transform.localScale, target, 1f - Mathf.Exp(-speed * Time.unscaledDeltaTime));
+        transform.localScale = GameSettings.ReduceMotion ? target
+            : Vector3.Lerp(transform.localScale, target, 1f - Mathf.Exp(-speed * Time.unscaledDeltaTime));
     }
 
     public void OnPointerEnter(PointerEventData e) => hovered = true;

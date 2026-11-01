@@ -1,39 +1,70 @@
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Settings paneli: ses, tam ekran, cozunurluk ve grafik kalitesi.
-/// Degisiklikler aninda uygulanir ve GameSettings uzerinden kaydedilir.
+/// Settings sayfasi (dedenin acik defteri): Sound, Language, Look &amp; feel, Play.
+/// Degisiklikler aninda uygulanir. "Save &amp; back" kaydeder; sol ustteki geri oku veya Escape
+/// kaydetmeden cikar ve sayfa acildigindaki ayarlara geri doner.
 /// </summary>
 public class SettingsMenu : MonoBehaviour
 {
-    [SerializeField] Slider masterVolumeSlider;
-    [SerializeField] Slider musicVolumeSlider;
-    [SerializeField] Slider sfxVolumeSlider;
-    [SerializeField] Text masterVolumeValue;
-    [SerializeField] Text musicVolumeValue;
-    [SerializeField] Text sfxVolumeValue;
-    [SerializeField] Toggle fullscreenToggle;
-    [SerializeField] Dropdown resolutionDropdown;
-    [SerializeField] Dropdown qualityDropdown;
+    [Header("Sound")]
+    [Tooltip("0 = Auto, 1 = Manual")]
+    [SerializeField] SegmentedControl audioMode;
+    [SerializeField] Slider musicSlider;
+    [SerializeField] Slider effectsSlider;
+    [SerializeField] Slider wavesSlider;
+    [SerializeField] Text musicValue;
+    [SerializeField] Text effectsValue;
+    [SerializeField] Text wavesValue;
 
-    readonly List<Vector2Int> resolutions = new List<Vector2Int>();
+    [Header("Language / Look & feel")]
+    [SerializeField] SegmentedControl language;
+    [SerializeField] SegmentedControl timeOfDay;
+    [SerializeField] SegmentedControl textSize;
+
+    [Header("Play")]
+    [SerializeField] Toggle cozyMode;
+    [SerializeField] Toggle hints;
+    [SerializeField] Toggle materialLabels;
+    [SerializeField] Toggle reduceMotion;
+
+    GameSettings.Snapshot opened;
+    bool saved;
 
     void Awake()
     {
-        masterVolumeSlider.onValueChanged.AddListener(v => { GameSettings.MasterVolume = v; SetPercent(masterVolumeValue, v); });
-        musicVolumeSlider.onValueChanged.AddListener(v => { GameSettings.MusicVolume = v; SetPercent(musicVolumeValue, v); });
-        sfxVolumeSlider.onValueChanged.AddListener(v => { GameSettings.SfxVolume = v; SetPercent(sfxVolumeValue, v); });
-        fullscreenToggle.onValueChanged.AddListener(v => GameSettings.Fullscreen = v);
-        resolutionDropdown.onValueChanged.AddListener(OnResolutionChanged);
-        qualityDropdown.onValueChanged.AddListener(i => GameSettings.Quality = i);
+        audioMode.ValueChanged += i => { GameSettings.AudioAuto = i == 0; RefreshSound(); };
+        musicSlider.onValueChanged.AddListener(v => { SwitchToManual(); GameSettings.MusicVolume = v; SetPercent(musicValue, v); });
+        effectsSlider.onValueChanged.AddListener(v => { SwitchToManual(); GameSettings.SfxVolume = v; SetPercent(effectsValue, v); });
+        wavesSlider.onValueChanged.AddListener(v => { SwitchToManual(); GameSettings.AmbienceVolume = v; SetPercent(wavesValue, v); });
+        language.ValueChanged += i => GameSettings.Language = (GameLanguage)i;
+        timeOfDay.ValueChanged += i => GameSettings.TimeOfDay = (TimeOfDayMode)i;
+        textSize.ValueChanged += i => GameSettings.TextSize = (TextSizeMode)i;
+        cozyMode.onValueChanged.AddListener(v => GameSettings.CozyMode = v);
+        hints.onValueChanged.AddListener(v => GameSettings.Hints = v);
+        materialLabels.onValueChanged.AddListener(v => GameSettings.MaterialLabels = v);
+        reduceMotion.onValueChanged.AddListener(v => GameSettings.ReduceMotion = v);
     }
 
-    void OnEnable() => Refresh();
+    void OnEnable()
+    {
+        opened = GameSettings.Capture();
+        saved = false;
+        Refresh();
+    }
 
-    void OnDisable() => GameSettings.Save();
+    void OnDisable()
+    {
+        if (!saved) GameSettings.Restore(opened);
+    }
+
+    /// <summary>"Save &amp; back": ayarlari kalici yap (sayfayi controller kapatir).</summary>
+    public void Save()
+    {
+        saved = true;
+        GameSettings.Save();
+    }
 
     public void ResetToDefaults()
     {
@@ -41,40 +72,41 @@ public class SettingsMenu : MonoBehaviour
         Refresh();
     }
 
-    void Refresh()
+    /// <summary>Auto'dayken bir kaydirici oynatilirsa Manual'e gec; diger kaydiricilar oldugu yerde kalsin.</summary>
+    void SwitchToManual()
     {
-        masterVolumeSlider.SetValueWithoutNotify(GameSettings.MasterVolume);
-        musicVolumeSlider.SetValueWithoutNotify(GameSettings.MusicVolume);
-        sfxVolumeSlider.SetValueWithoutNotify(GameSettings.SfxVolume);
-        SetPercent(masterVolumeValue, GameSettings.MasterVolume);
-        SetPercent(musicVolumeValue, GameSettings.MusicVolume);
-        SetPercent(sfxVolumeValue, GameSettings.SfxVolume);
-
-        fullscreenToggle.SetIsOnWithoutNotify(GameSettings.Fullscreen);
-
-        qualityDropdown.ClearOptions();
-        qualityDropdown.AddOptions(QualitySettings.names.ToList());
-        qualityDropdown.SetValueWithoutNotify(GameSettings.Quality);
-        qualityDropdown.RefreshShownValue();
-
-        resolutions.Clear();
-        resolutions.AddRange(Screen.resolutions
-            .Select(r => new Vector2Int(r.width, r.height))
-            .Distinct()
-            .OrderByDescending(r => r.x).ThenByDescending(r => r.y));
-        var current = new Vector2Int(Screen.width, Screen.height);
-        if (!resolutions.Contains(current)) resolutions.Insert(0, current);
-
-        resolutionDropdown.ClearOptions();
-        resolutionDropdown.AddOptions(resolutions.Select(r => $"{r.x} x {r.y}").ToList());
-        resolutionDropdown.SetValueWithoutNotify(resolutions.IndexOf(current));
-        resolutionDropdown.RefreshShownValue();
+        if (!GameSettings.AudioAuto) return;
+        float music = GameSettings.MusicVolume, sfx = GameSettings.SfxVolume, waves = GameSettings.AmbienceVolume;
+        GameSettings.AudioAuto = false;
+        GameSettings.MusicVolume = music;
+        GameSettings.SfxVolume = sfx;
+        GameSettings.AmbienceVolume = waves;
+        audioMode.SetValueWithoutNotify(1);
     }
 
-    void OnResolutionChanged(int index)
+    void Refresh()
     {
-        if (index < 0 || index >= resolutions.Count) return;
-        GameSettings.SetResolution(resolutions[index].x, resolutions[index].y);
+        RefreshSound();
+
+        language.SetValueWithoutNotify((int)GameSettings.Language);
+        timeOfDay.SetValueWithoutNotify((int)GameSettings.TimeOfDay);
+        textSize.SetValueWithoutNotify((int)GameSettings.TextSize);
+
+        cozyMode.SetIsOnWithoutNotify(GameSettings.CozyMode);
+        hints.SetIsOnWithoutNotify(GameSettings.Hints);
+        materialLabels.SetIsOnWithoutNotify(GameSettings.MaterialLabels);
+        reduceMotion.SetIsOnWithoutNotify(GameSettings.ReduceMotion);
+    }
+
+    void RefreshSound()
+    {
+        audioMode.SetValueWithoutNotify(GameSettings.AudioAuto ? 0 : 1);
+        musicSlider.SetValueWithoutNotify(GameSettings.MusicVolume);
+        effectsSlider.SetValueWithoutNotify(GameSettings.SfxVolume);
+        wavesSlider.SetValueWithoutNotify(GameSettings.AmbienceVolume);
+        SetPercent(musicValue, GameSettings.MusicVolume);
+        SetPercent(effectsValue, GameSettings.SfxVolume);
+        SetPercent(wavesValue, GameSettings.AmbienceVolume);
     }
 
     static void SetPercent(Text label, float value)

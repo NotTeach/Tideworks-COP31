@@ -11,7 +11,7 @@ using UnityEngine.UI;
 public class IntroController : MonoBehaviour
 {
     [Header("Yuklenecek sahne (Build Settings'te ekli olmali)")]
-    [SerializeField] string gameSceneName = "SampleScene";
+    [SerializeField] string gameSceneName = "Workshop";
 
     [Header("Defterdeki not: satirlar sirayla belirir")]
     [SerializeField] Text[] noteLines;
@@ -47,8 +47,8 @@ public class IntroController : MonoBehaviour
         Time.timeScale = 1f;
 
         int daysLeft = GameProgress.TotalDays - GameProgress.CurrentDay + 1;
-        if (timeLeftValue) timeLeftValue.text = daysLeft == 1 ? "1 day" : $"{daysLeft} days";
-        if (nestsValue) nestsValue.text = nestsOnBeach == 1 ? "1 nest" : $"{nestsOnBeach} nests";
+        if (timeLeftValue) timeLeftValue.text = daysLeft == 1 ? Loc.T("1 day") : Loc.F("{0} days", daysLeft);
+        if (nestsValue) nestsValue.text = nestsOnBeach == 1 ? Loc.T("1 nest") : Loc.F("{0} nests", nestsOnBeach);
 
         foreach (var line in noteLines) SetAlpha(line, 0f);
         StartCoroutine(RevealNote());

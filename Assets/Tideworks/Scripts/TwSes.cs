@@ -120,8 +120,22 @@ namespace Tideworks
         public static void Ambiyans(string ad, float gecis = 1.2f)
         {
             var s = O.ambiyans;
+            var yeni = string.IsNullOrEmpty(ad) ? null : O.Yukle(ad);
+            if (yeni != null && s.clip == yeni && s.isPlaying) return; // zaten çalıyor, baştan başlatma
             if (O.ambiyansGecis != null) O.StopCoroutine(O.ambiyansGecis);
-            O.ambiyansGecis = O.StartCoroutine(O.AmbiyansDegistir(s, string.IsNullOrEmpty(ad) ? null : O.Yukle(ad), gecis));
+            O.ambiyansGecis = O.StartCoroutine(O.AmbiyansDegistir(s, yeni, gecis));
+        }
+
+        /// <summary>
+        /// Oyun açılınca (hangi sahneden başlarsa başlasın) ana tema ve deniz sesi kendiliğinden başlar.
+        /// Sahneler kendi müziğini TwSes.Muzik / TwSahneSesi ile değiştirebilir.
+        /// </summary>
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        static void OyunAcilinca()
+        {
+            var aktif = O.aAktif ? O.muzikA : O.muzikB;
+            if (!aktif.isPlaying) Muzik(Ses.MuzikAnaTema);
+            if (!O.ambiyans.isPlaying) Ambiyans(Ses.AmbiyansDeniz);
         }
 
         public static void TekneMotoru(bool acik)
@@ -153,13 +167,16 @@ namespace Tideworks
         public const float EfektTaban = 0.8f;
 
         /// <summary>
-        /// Settings menüsünden çağrılır (GameSettings). muzik: Music Volume, efekt: Sound Effects (0..1).
+        /// Settings menüsünden çağrılır (GameSettings). muzik: Music, efekt: Sound effects (0..1).
         /// Ambiyans ve tekne motoru efekt seviyesini izler. Çalan sesler anında güncellenir.
         /// </summary>
-        public static void AyarlariUygula(float muzik, float efekt)
+        public static void AyarlariUygula(float muzik, float efekt) => AyarlariUygula(muzik, efekt, efekt);
+
+        /// <summary>ambiyans: Ocean waves (deniz/atölye döngüleri ve tekne motoru), 0..1.</summary>
+        public static void AyarlariUygula(float muzik, float efekt, float ambiyans)
         {
             MuzikSeviyesi = MuzikTaban * Mathf.Clamp01(muzik);
-            AmbiyansSeviyesi = AmbiyansTaban * Mathf.Clamp01(efekt);
+            AmbiyansSeviyesi = AmbiyansTaban * Mathf.Clamp01(ambiyans);
             EfektSeviyesi = EfektTaban * Mathf.Clamp01(efekt);
 
             if (ornek == null) return;

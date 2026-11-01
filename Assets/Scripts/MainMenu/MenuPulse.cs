@@ -24,7 +24,9 @@ public class MenuPulse : MonoBehaviour
 
     void Update()
     {
-        float t = 0.5f + 0.5f * Mathf.Sin((Time.unscaledTime * speed + phase) * Mathf.PI * 2f);
+        // Reduce motion: yanip sonme yok, sabit orta parlaklik
+        float t = GameSettings.ReduceMotion ? 0.5f
+            : 0.5f + 0.5f * Mathf.Sin((Time.unscaledTime * speed + phase) * Mathf.PI * 2f);
         var c = graphic.color;
         c.a = Mathf.Lerp(minAlpha, maxAlpha, t);
         graphic.color = c;

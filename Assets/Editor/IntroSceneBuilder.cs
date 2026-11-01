@@ -21,11 +21,11 @@ using static MainMenuSceneBuilder;
 [InitializeOnLoad]
 public static class IntroSceneBuilder
 {
-    const int BuilderVersion = 1;
+    const int BuilderVersion = 2;
     const string ScenePath = "Assets/Scenes/Intro.unity";
     const string SpriteDir = "Assets/Sprites/Intro/";
     const string FontDir = "Assets/Fonts/";
-    const string AutoBuildKey = "Tideworks.IntroAutoBuildTried.v1";
+    const string AutoBuildKey = "Tideworks.IntroAutoBuildTried.v2";
     static string VersionKey => "Tideworks.IntroBuilderVersion." + PlayerSettings.productGUID;
 
     // Tasarim 1280x720; artboard 2x (2560x1440). Asagidaki tum koordinatlar 1280x720'dedir.
@@ -163,6 +163,7 @@ public static class IntroSceneBuilder
         so.ApplyModifiedPropertiesWithoutUndo();
 
         Directory.CreateDirectory(Path.GetDirectoryName(ScenePath));
+        ArtLocalization.Apply(canvasGo.transform);
         EditorSceneManager.SaveScene(scene, ScenePath);
         AddToBuildSettings();
         EditorPrefs.SetInt(VersionKey, BuilderVersion);

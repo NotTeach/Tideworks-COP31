@@ -138,8 +138,12 @@ public class MainMenuController : MonoBehaviour
         bool hasSave = GameProgress.HasSave;
         if (continueButton) continueButton.interactable = hasSave;
         if (continueBadge)
-            continueBadge.text = hasSave ? $"Day {GameProgress.CurrentDay} of {GameProgress.TotalDays}" : "No save";
+            continueBadge.text = hasSave ? Loc.F("Day {0} of {1}", GameProgress.CurrentDay, GameProgress.TotalDays) : Loc.T("No save");
     }
+
+    void OnEnable() => Loc.LanguageChanged += RefreshContinue;
+
+    void OnDisable() => Loc.LanguageChanged -= RefreshContinue;
 
     void LoadScene(string sceneName)
     {

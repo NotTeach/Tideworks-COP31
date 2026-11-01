@@ -20,12 +20,13 @@ using UnityEngine.UI;
 [InitializeOnLoad]
 public static class MainMenuSceneBuilder
 {
-    const int BuilderVersion = 4;
+    const int BuilderVersion = 7;
     const string ScenePath = "Assets/Scenes/MainMenu.unity";
     const string GameScenePath = "Assets/Scenes/SampleScene.unity";
     const string SpriteDir = "Assets/Sprites/MainMenu/";
+    const string SettingsDir = "Assets/Sprites/Settings/";
     const string FontDir = "Assets/Fonts/";
-    const string AutoBuildKey = "Tideworks.MainMenuAutoBuildTried.v4";
+    const string AutoBuildKey = "Tideworks.MainMenuAutoBuildTried.v7";
     static string VersionKey => "Tideworks.MainMenuBuilderVersion." + PlayerSettings.productGUID;
 
     // Gorseldeki konumlar (piksel, sol ust koseden): x, y, genislik, yukseklik
@@ -37,6 +38,12 @@ public static class MainMenuSceneBuilder
     static readonly Rect SettingsRect = new Rect(623, 1019, 352, 119);
     static readonly Rect NotebookRect = new Rect(60, 55, 1040, 1396);
     static readonly Rect PageContentRect = new Rect(240, 175, 720, 1150);
+    // Settings sayfasi (ayni 2752x1536 olcek)
+    static readonly Rect SettingsBackRect = new Rect(57, 42, 137, 138);
+    static readonly Rect SettingsSaveRect = new Rect(2085, 1390, 457, 138);
+    static readonly Rect SettingsResetRect = new Rect(292, 1120, 416, 116);
+    static readonly float[] SliderRows = { 473, 603, 732 };          // Music, Sound effects, Ocean waves (merkez y)
+    static readonly float[] SwitchRows = { 876, 1010, 1143, 1277 }; // Cozy, Hints, Material labels, Reduce motion
     static readonly Vector2 MoonCenter = new Vector2(2450, 230);
     static readonly Vector3[] Stars = // x, y, boyut
     {
@@ -47,13 +54,12 @@ public static class MainMenuSceneBuilder
     static readonly Color Ink = new Color(0.29f, 0.17f, 0.10f);        // koyu kahve yazi
     static readonly Color InkSoft = new Color(0.42f, 0.29f, 0.19f);
     static readonly Color Teal = new Color(0.06f, 0.27f, 0.31f);       // baslik
-    static readonly Color TealFill = new Color(0.11f, 0.45f, 0.47f);
     static readonly Color Rust = new Color(0.72f, 0.26f, 0.13f);       // "The Last Beach" kirmizisi
-    static readonly Color Cream = new Color(0.98f, 0.94f, 0.85f);
+    static readonly Color SegmentInk = new Color32(60, 36, 22, 255);
+    static readonly Color PercentRust = new Color32(175, 73, 33, 255);
     static readonly Color Night = new Color(0.04f, 0.13f, 0.20f);
 
     static Font fontBody, fontHeavy, fontHand;
-    static DefaultControls.Resources resources;
 
     static MainMenuSceneBuilder()
     {
@@ -86,20 +92,11 @@ public static class MainMenuSceneBuilder
         if (askToSave && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
 
         ConfigureSprites();
+        ConfigureSprites(SettingsDir);
         var legacy = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         fontBody = AssetDatabase.LoadAssetAtPath<Font>(FontDir + "Nunito-Bold.ttf") ?? legacy;
         fontHeavy = AssetDatabase.LoadAssetAtPath<Font>(FontDir + "Nunito-ExtraBold.ttf") ?? legacy;
         fontHand = AssetDatabase.LoadAssetAtPath<Font>(FontDir + "Kalam-Bold.ttf") ?? legacy;
-        resources = new DefaultControls.Resources
-        {
-            standard = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/UISprite.psd"),
-            background = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/Background.psd"),
-            inputField = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/InputFieldBackground.psd"),
-            knob = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/Knob.psd"),
-            checkmark = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/Checkmark.psd"),
-            dropdown = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/DropdownArrow.psd"),
-            mask = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/UIMask.psd"),
-        };
 
         var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
@@ -178,27 +175,42 @@ public static class MainMenuSceneBuilder
         MakeFlexibleSpacer(howToCol);
         var howToBack = MakeCreamButton(howToCol, "Back", controller.ShowMain, 340);
 
-        // --- Settings: defterin bos sayfasi ---
+        // --- Settings: dedenin acik defteri (tam ekran). Etiketler gorselde, kontroller ustunde ---
         var settings = MakePage(artboard, "SettingsPage");
-        var settingsCol = MakeNotebookPage(settings, "Settings", "Make it sound and look just right.");
-        MakeSpacer(settingsCol, 18);
-        var master = MakeSliderRow(settingsCol, "Master", out var masterValue);
-        var music = MakeSliderRow(settingsCol, "Music", out var musicValue);
-        var sfx = MakeSliderRow(settingsCol, "Effects", out var sfxValue);
-        MakeSpacer(settingsCol, 6);
-        var fullscreen = MakeToggleRow(settingsCol, "Fullscreen");
-        var resolution = MakeDropdownRow(settingsCol, "Resolution");
-        var quality = MakeDropdownRow(settingsCol, "Quality");
-        MakeFlexibleSpacer(settingsCol);
-        var settingsButtons = MakeRow(settingsCol, "Buttons", 30);
+        var settingsBg = MakeImage(settings.transform, "Background", LoadSprite("SettingsBackground", SettingsDir));
+        settingsBg.raycastTarget = true; // alttaki ana sayfa butonlarina tiklanmasin
+        Place(settingsBg.rectTransform, new Rect(Vector2.zero, ArtSize));
         var settingsMenu = settings.gameObject.AddComponent<SettingsMenu>();
-        MakeCreamButton(settingsButtons, "Reset", settingsMenu.ResetToDefaults, 320);
-        MakeCreamButton(settingsButtons, "Back", controller.ShowMain, 320);
+
+        var music = MakeArtSlider(settings.transform, "Music", SliderRows[0], out var musicValue);
+        var effects = MakeArtSlider(settings.transform, "SoundEffects", SliderRows[1], out var effectsValue);
+        var waves = MakeArtSlider(settings.transform, "OceanWaves", SliderRows[2], out var wavesValue);
+        // "Sound" basliginin saginda: Auto = onerilen ses dengesi, Manual = kaydiricilar
+        var audioMode = MakeSegmented(settings.transform, "AudioMode", new Rect(792, 330, 350, 88),
+            new[] { "Auto", "Manual" }, new[] { 30, 30 });
+        var language = MakeSegmented(settings.transform, "Language", new Rect(301, 941, 989, 127),
+            new[] { "English", "Türkçe" }, new[] { 36, 36 });
+        var timeOfDay = MakeSegmented(settings.transform, "TimeOfDay", new Rect(1780, 421, 679, 114),
+            new[] { "Auto", "Day", "Night" }, new[] { 34, 34, 34 });
+        var textSize = MakeSegmented(settings.transform, "TextSize", new Rect(1780, 556, 679, 113),
+            new[] { "Aa", "Aa", "Aa" }, new[] { 26, 34, 46 });
+        var cozy = MakeSwitch(settings.transform, "CozyMode", SwitchRows[0]);
+        var hints = MakeSwitch(settings.transform, "Hints", SwitchRows[1]);
+        var materialLabels = MakeSwitch(settings.transform, "MaterialLabels", SwitchRows[2]);
+        var reduceMotion = MakeSwitch(settings.transform, "ReduceMotion", SwitchRows[3]);
+
+        MakeArtButton(settings.transform, "ResetButton", "BtnReset", SettingsResetRect, settingsMenu.ResetToDefaults, SettingsDir)
+            .GetComponent<MenuButtonFx>().hoverScale = 1.03f;
+        var saveBack = MakeArtButton(settings.transform, "SaveBackButton", "BtnSaveBack", SettingsSaveRect, settingsMenu.Save, SettingsDir);
+        UnityEventTools.AddPersistentListener(saveBack.onClick, controller.ShowMain);
+        // Geri ok kaydetmeden cikar (SettingsMenu sayfa kapaninca eski ayarlara doner)
+        MakeArtButton(settings.transform, "BackButton", "BtnBack", SettingsBackRect, controller.ShowMain, SettingsDir);
 
         SetRefs(settingsMenu,
-            ("masterVolumeSlider", master), ("musicVolumeSlider", music), ("sfxVolumeSlider", sfx),
-            ("masterVolumeValue", masterValue), ("musicVolumeValue", musicValue), ("sfxVolumeValue", sfxValue),
-            ("fullscreenToggle", fullscreen), ("resolutionDropdown", resolution), ("qualityDropdown", quality));
+            ("audioMode", audioMode), ("musicSlider", music), ("effectsSlider", effects), ("wavesSlider", waves),
+            ("musicValue", musicValue), ("effectsValue", effectsValue), ("wavesValue", wavesValue),
+            ("language", language), ("timeOfDay", timeOfDay), ("textSize", textSize),
+            ("cozyMode", cozy), ("hints", hints), ("materialLabels", materialLabels), ("reduceMotion", reduceMotion));
 
         // --- Ekran gecisi icin karartma (sahne acilirken / oyuna gecerken) ---
         var faderImg = MakeImage(canvasGo.transform, "ScreenFader", null);
@@ -212,7 +224,7 @@ public static class MainMenuSceneBuilder
         SetRefs(controller,
             ("mainPage", main), ("howToPlayPage", howTo), ("settingsPage", settings), ("screenFader", fader),
             ("continueButton", continueBtn), ("continueBadge", badge),
-            ("mainFirstSelected", startBtn), ("howToPlayFirstSelected", howToBack), ("settingsFirstSelected", master));
+            ("mainFirstSelected", startBtn), ("howToPlayFirstSelected", howToBack), ("settingsFirstSelected", music));
 
         foreach (var page in new[] { howTo, settings })
         {
@@ -221,6 +233,7 @@ public static class MainMenuSceneBuilder
         }
 
         Directory.CreateDirectory(Path.GetDirectoryName(ScenePath));
+        ArtLocalization.Apply(canvasGo.transform);
         EditorSceneManager.SaveScene(scene, ScenePath);
         AddToBuildSettings();
         EditorPrefs.SetInt(VersionKey, BuilderVersion);
@@ -236,7 +249,7 @@ public static class MainMenuSceneBuilder
             if (!(AssetImporter.GetAtPath(path) is TextureImporter ti)) continue;
             string name = Path.GetFileNameWithoutExtension(path);
             bool big = name.EndsWith("Background") || name == "NotebookPage";
-            var border = name == "BtnCreamBlank" ? new Vector4(48, 42, 48, 30) : Vector4.zero;
+            var border = SpriteBorders.TryGetValue(name, out var b) ? b : Vector4.zero;
 
             if (ti.textureType == TextureImporterType.Sprite && ti.maxTextureSize == 4096 && ti.spriteBorder == border) continue;
             ti.textureType = TextureImporterType.Sprite;
@@ -249,6 +262,17 @@ public static class MainMenuSceneBuilder
             ti.SaveAndReimport();
         }
     }
+
+    // 9-slice kenarlari (sol, alt, sag, ust)
+    static readonly System.Collections.Generic.Dictionary<string, Vector4> SpriteBorders =
+        new System.Collections.Generic.Dictionary<string, Vector4>
+    {
+        { "BtnCreamBlank", new Vector4(48, 42, 48, 30) },
+        { "SegFrame", new Vector4(40, 40, 40, 40) },
+        { "SegPill", new Vector4(26, 26, 26, 26) },
+        { "SliderTrack", new Vector4(16, 0, 16, 0) },
+        { "SliderFill", new Vector4(16, 0, 16, 0) },
+    };
 
     internal static Sprite LoadSprite(string name, string dir = SpriteDir)
     {
@@ -357,9 +381,10 @@ public static class MainMenuSceneBuilder
         return img;
     }
 
-    static Button MakeArtButton(Transform parent, string name, string sprite, Rect rect, UnityAction onClick)
+    static Button MakeArtButton(Transform parent, string name, string sprite, Rect rect, UnityAction onClick,
+        string dir = SpriteDir)
     {
-        var img = MakeImage(parent, name, LoadSprite(sprite));
+        var img = MakeImage(parent, name, LoadSprite(sprite, dir));
         img.raycastTarget = true;
         Place(img.rectTransform, rect);
 
@@ -453,121 +478,132 @@ public static class MainMenuSceneBuilder
         return t;
     }
 
-    static RectTransform MakeLabeledRow(Transform parent, string label)
+    // ---------------- Settings kontrolleri ----------------
+
+    /// <summary>Yatayda ebeveyne yayilan, dikeyde ortalanmis sabit yukseklikte serit.</summary>
+    static void Band(RectTransform rt, float left, float right, float height)
     {
-        var row = MakeRow(parent, label.Replace(" ", "") + "Row", 20);
-        var text = MakeText(row, "Label", label, 36, fontHeavy, Ink, TextAnchor.MiddleLeft);
-        var le = text.gameObject.AddComponent<LayoutElement>();
-        le.preferredWidth = 250;
-        le.preferredHeight = 76;
-        return row;
+        rt.anchorMin = new Vector2(0, 0.5f);
+        rt.anchorMax = new Vector2(1, 0.5f);
+        rt.pivot = new Vector2(0.5f, 0.5f);
+        rt.sizeDelta = new Vector2(-(left + right), height);
+        rt.anchoredPosition = new Vector2((left - right) / 2, 0);
     }
 
-    static Slider MakeSliderRow(Transform parent, string label, out Text valueText)
+    static Slider MakeArtSlider(Transform parent, string name, float cy, out Text valueText)
     {
-        var row = MakeLabeledRow(parent, label);
-        var go = DefaultControls.CreateSlider(resources);
-        go.name = "Slider";
-        go.transform.SetParent(row, false);
-        var le = go.AddComponent<LayoutElement>();
-        le.preferredWidth = 340;
-        le.preferredHeight = 40;
+        var go = new GameObject(name + "Slider", typeof(RectTransform), typeof(Slider));
+        go.transform.SetParent(parent, false);
+        var rt = (RectTransform)go.transform;
+        Place(rt, new Rect(656, cy - 27, 486, 54));
+
+        var track = MakeImage(rt, "Track", LoadSprite("SliderTrack", SettingsDir));
+        track.type = Image.Type.Sliced;
+        track.raycastTarget = true; // raya tiklayinca deger oraya atlar
+        Band(track.rectTransform, 0, 0, 26);
+
+        // Dolu kisim tutamacin ortasina kadar uzansin (tutamac yari genisligi = 18)
+        var fillArea = new GameObject("Fill Area", typeof(RectTransform)).transform as RectTransform;
+        fillArea.SetParent(rt, false);
+        Band(fillArea, 0, 18, 26);
+        var fill = MakeImage(fillArea, "Fill", LoadSprite("SliderFill", SettingsDir));
+        fill.type = Image.Type.Sliced;
+        var frt = fill.rectTransform;
+        frt.anchorMin = Vector2.zero;
+        frt.anchorMax = new Vector2(0.7f, 1f);
+        frt.offsetMin = Vector2.zero;
+        frt.offsetMax = new Vector2(18, 0);
+
+        var handleArea = new GameObject("Handle Slide Area", typeof(RectTransform)).transform as RectTransform;
+        handleArea.SetParent(rt, false);
+        Band(handleArea, 18, 18, 54);
+        var knob = MakeImage(handleArea, "Handle", LoadSprite("SliderKnob", SettingsDir));
+        knob.raycastTarget = true;
+        var krt = knob.rectTransform;
+        krt.anchorMin = krt.anchorMax = new Vector2(0.7f, 0.5f);
+        krt.sizeDelta = new Vector2(36, 54);
 
         var slider = go.GetComponent<Slider>();
+        slider.fillRect = frt;
+        slider.handleRect = krt;
+        slider.targetGraphic = knob;
+        slider.direction = Slider.Direction.LeftToRight;
         slider.minValue = 0;
         slider.maxValue = 1;
-        slider.value = 1;
-        var bgImage = go.transform.Find("Background")?.GetComponent<Image>();
-        if (bgImage) bgImage.color = new Color(0.55f, 0.40f, 0.25f, 0.35f);
-        if (slider.fillRect) slider.fillRect.GetComponent<Image>().color = TealFill;
-        if (slider.handleRect)
-        {
-            slider.handleRect.GetComponent<Image>().color = Rust;
-            slider.handleRect.sizeDelta = new Vector2(44, 4);
-        }
+        slider.value = 0.7f;
         var colors = slider.colors;
-        colors.highlightedColor = colors.selectedColor = new Color(1f, 0.85f, 0.75f);
+        colors.highlightedColor = colors.selectedColor = new Color(1f, 0.88f, 0.8f);
+        colors.pressedColor = new Color(0.85f, 0.75f, 0.7f);
         slider.colors = colors;
 
-        valueText = MakeText(row, "Value", "100%", 32, fontBody, InkSoft, TextAnchor.MiddleRight);
-        var vle = valueText.gameObject.AddComponent<LayoutElement>();
-        vle.preferredWidth = 90;
-        vle.preferredHeight = 76;
+        valueText = MakeText(parent, name + "Value", "70%", 40, fontHeavy, PercentRust);
+        Place(valueText.rectTransform, new Rect(1188, cy - 30, 120, 60));
         return slider;
     }
 
-    static Toggle MakeToggleRow(Transform parent, string label)
+    static SegmentedControl MakeSegmented(Transform parent, string name, Rect r, string[] options, int[] sizes)
     {
-        var row = MakeLabeledRow(parent, label);
-        var go = DefaultControls.CreateToggle(resources);
-        go.name = "Toggle";
-        go.transform.SetParent(row, false);
-        var le = go.AddComponent<LayoutElement>();
-        le.preferredWidth = 450;
-        le.preferredHeight = 56;
+        var frame = MakeImage(parent, name, LoadSprite("SegFrame", SettingsDir));
+        frame.type = Image.Type.Sliced;
+        Place(frame.rectTransform, r);
 
-        var toggleLabel = go.transform.Find("Label");
-        if (toggleLabel) Object.DestroyImmediate(toggleLabel.gameObject);
+        const float inset = 14;
+        float w = (r.width - 2 * inset) / options.Length, h = r.height - 2 * inset;
+        var pill = MakeImage(frame.transform, "Pill", LoadSprite("SegPill", SettingsDir));
+        pill.type = Image.Type.Sliced;
+        Place(pill.rectTransform, new Rect(inset + 2, inset, w - 4, h));
 
-        var box = (RectTransform)go.transform.Find("Background");
-        box.anchorMin = box.anchorMax = box.pivot = new Vector2(0, 0.5f);
-        box.anchoredPosition = Vector2.zero;
-        box.sizeDelta = new Vector2(52, 52);
-        box.GetComponent<Image>().color = Cream;
-        var check = (RectTransform)box.Find("Checkmark");
-        check.anchorMin = Vector2.zero;
-        check.anchorMax = Vector2.one;
-        check.offsetMin = new Vector2(5, 5);
-        check.offsetMax = new Vector2(-5, -5);
-        check.GetComponent<Image>().color = TealFill;
-        return go.GetComponent<Toggle>();
+        var buttons = new Button[options.Length];
+        var labels = new Text[options.Length];
+        for (int i = 0; i < options.Length; i++)
+        {
+            var hit = MakeImage(frame.transform, "Option" + i, null);
+            hit.color = new Color(1, 1, 1, 0);
+            hit.raycastTarget = true;
+            Place(hit.rectTransform, new Rect(inset + i * w + 2, inset, w - 4, h));
+            buttons[i] = hit.gameObject.AddComponent<Button>();
+            buttons[i].transition = Selectable.Transition.None;
+            hit.gameObject.AddComponent<MenuButtonFx>().hoverScale = 1.06f;
+
+            labels[i] = MakeText(hit.transform, "Label", options[i], sizes[i], fontHeavy, SegmentInk);
+            Stretch(labels[i].rectTransform);
+        }
+
+        var control = frame.gameObject.AddComponent<SegmentedControl>();
+        control.segments = buttons;
+        control.labels = labels;
+        control.pill = pill.rectTransform;
+        control.normalColor = SegmentInk;
+        return control;
     }
 
-    static Dropdown MakeDropdownRow(Transform parent, string label)
+    static Toggle MakeSwitch(Transform parent, string name, float cy)
     {
-        var row = MakeLabeledRow(parent, label);
-        var go = DefaultControls.CreateDropdown(resources);
-        go.name = "Dropdown";
-        go.transform.SetParent(row, false);
-        var le = go.AddComponent<LayoutElement>();
-        le.preferredWidth = 450;
-        le.preferredHeight = 80;
+        var track = MakeImage(parent, name + "Switch", LoadSprite("SwitchOn", SettingsDir));
+        track.raycastTarget = true;
+        Place(track.rectTransform, new Rect(2320, cy - 41, 140, 82));
 
-        var frame = go.GetComponent<Image>();
-        frame.sprite = LoadSprite("BtnCreamBlank");
-        frame.type = Image.Type.Sliced;
-        frame.pixelsPerUnitMultiplier = 1.4f;
+        var knob = MakeImage(track.transform, "Knob", LoadSprite("SwitchKnob", SettingsDir));
+        var krt = knob.rectTransform;
+        krt.anchorMin = krt.anchorMax = new Vector2(0, 0.5f);
+        krt.sizeDelta = new Vector2(62, 62);
+        krt.anchoredPosition = new Vector2(99, 0);
 
-        var dd = go.GetComponent<Dropdown>();
-        dd.captionText.font = fontBody;
-        dd.captionText.fontSize = 30;
-        dd.captionText.color = Ink;
-        dd.captionText.rectTransform.offsetMin = new Vector2(26, 12);
-        dd.captionText.rectTransform.offsetMax = new Vector2(-50, -6);
-        dd.itemText.font = fontBody;
-        dd.itemText.fontSize = 28;
-        dd.itemText.color = Ink;
-        dd.options.Clear();
+        var toggle = track.gameObject.AddComponent<Toggle>();
+        toggle.targetGraphic = track;
+        toggle.graphic = null;
+        toggle.isOn = true;
+        var colors = toggle.colors;
+        colors.pressedColor = new Color(0.85f, 0.85f, 0.85f, 1f);
+        colors.fadeDuration = 0.08f;
+        toggle.colors = colors;
+        track.gameObject.AddComponent<MenuButtonFx>();
 
-        var arrow = (RectTransform)go.transform.Find("Arrow");
-        arrow.GetComponent<Image>().color = Ink;
-        arrow.sizeDelta = new Vector2(30, 30);
-        arrow.anchoredPosition = new Vector2(-30, 4);
-
-        var template = dd.template;
-        template.sizeDelta = new Vector2(template.sizeDelta.x, 320);
-        template.GetComponent<Image>().color = Cream;
-        var item = (RectTransform)template.Find("Viewport/Content/Item");
-        item.sizeDelta = new Vector2(item.sizeDelta.x, 52);
-        var itemToggle = item.GetComponent<Toggle>();
-        var itemColors = itemToggle.colors;
-        itemColors.normalColor = Cream;
-        itemColors.highlightedColor = itemColors.selectedColor = new Color(0.90f, 0.82f, 0.66f);
-        itemToggle.colors = itemColors;
-        var itemCheck = item.Find("Item Checkmark")?.GetComponent<Image>();
-        if (itemCheck) itemCheck.color = TealFill;
-        var content = (RectTransform)item.parent;
-        content.sizeDelta = new Vector2(content.sizeDelta.x, 56);
-        return dd;
+        var sw = track.gameObject.AddComponent<SwitchToggle>();
+        sw.track = track;
+        sw.knob = krt;
+        sw.onSprite = LoadSprite("SwitchOn", SettingsDir);
+        sw.offSprite = LoadSprite("SwitchOff", SettingsDir);
+        return toggle;
     }
 }

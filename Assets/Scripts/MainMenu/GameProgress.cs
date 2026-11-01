@@ -14,9 +14,20 @@ public static class GameProgress
 
     public static int CurrentDay => Mathf.Clamp(PlayerPrefs.GetInt(DayKey, 1), 1, TotalDays);
 
+    const string CoinsKey = "progress.coins";
+    public const int StartCoins = 120;
+
+    /// <summary>Atolyenin ust barindaki altin sayaci.</summary>
+    public static int Coins
+    {
+        get => PlayerPrefs.GetInt(CoinsKey, StartCoins);
+        set => PlayerPrefs.SetInt(CoinsKey, Mathf.Max(0, value));
+    }
+
     public static void NewGame()
     {
         PlayerPrefs.SetInt(DayKey, 1);
+        PlayerPrefs.SetInt(CoinsKey, StartCoins);
         PlayerPrefs.Save();
     }
 
@@ -29,6 +40,7 @@ public static class GameProgress
     public static void Clear()
     {
         PlayerPrefs.DeleteKey(DayKey);
+        PlayerPrefs.DeleteKey(CoinsKey);
         PlayerPrefs.Save();
     }
 }

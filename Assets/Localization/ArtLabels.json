@@ -1,0 +1,1709 @@
+{
+ "sprites": [
+  {
+   "sprite": "MainMenu/BtnStart",
+   "width": 722,
+   "height": 171,
+   "labels": [
+    {
+     "en": "Start",
+     "font": "N",
+     "align": "c",
+     "size": 57,
+     "x": 270.0,
+     "y": 41.5,
+     "w": 253.0,
+     "h": 82.6,
+     "r": 254,
+     "g": 247,
+     "b": 241
+    }
+   ]
+  },
+  {
+   "sprite": "MainMenu/BtnContinue",
+   "width": 721,
+   "height": 147,
+   "labels": [
+    {
+     "en": "Continue",
+     "font": "N",
+     "align": "l",
+     "size": 38,
+     "x": 45.0,
+     "y": 53.5,
+     "w": 260.8,
+     "h": 55.1,
+     "r": 236,
+     "g": 253,
+     "b": 253
+    }
+   ]
+  },
+  {
+   "sprite": "MainMenu/BtnHowToPlay",
+   "width": 352,
+   "height": 118,
+   "labels": [
+    {
+     "en": "How to play",
+     "font": "N",
+     "align": "c",
+     "size": 34,
+     "x": 17.3,
+     "y": 36.2,
+     "w": 318.4,
+     "h": 49.3,
+     "r": 83,
+     "g": 44,
+     "b": 19
+    }
+   ]
+  },
+  {
+   "sprite": "MainMenu/BtnSettings",
+   "width": 352,
+   "height": 119,
+   "labels": [
+    {
+     "en": "Settings",
+     "font": "N",
+     "align": "c",
+     "size": 34,
+     "x": 67.5,
+     "y": 36.7,
+     "w": 216.0,
+     "h": 49.3,
+     "r": 81,
+     "g": 42,
+     "b": 16
+    }
+   ]
+  },
+  {
+   "sprite": "MainMenu/MenuBackground",
+   "width": 2752,
+   "height": 1536,
+   "labels": [
+    {
+     "en": "Grandpa's notebook · Kaş",
+     "font": "C",
+     "align": "l",
+     "size": 50,
+     "x": 235.0,
+     "y": 175.8,
+     "w": 708.8,
+     "h": 72.5,
+     "r": 129,
+     "g": 92,
+     "b": 46
+    },
+    {
+     "en": "The Last Beach",
+     "font": "C",
+     "align": "l",
+     "size": 70,
+     "x": 251.0,
+     "y": 446.1,
+     "w": 620.8,
+     "h": 101.5,
+     "r": 171,
+     "g": 77,
+     "b": 37
+    },
+    {
+     "en": "WORKSHOP",
+     "font": "N",
+     "align": "c",
+     "size": 36,
+     "x": 1989.1,
+     "y": 633.8,
+     "w": 356.8,
+     "h": 52.2,
+     "r": 246,
+     "g": 195,
+     "b": 110
+    },
+    {
+     "en": "Collect",
+     "font": "C",
+     "align": "c",
+     "size": 50,
+     "x": 499.0,
+     "y": 649.8,
+     "w": 215.0,
+     "h": 72.5,
+     "r": 96,
+     "g": 54,
+     "b": 19
+    },
+    {
+     "en": "Fix",
+     "font": "C",
+     "align": "c",
+     "size": 51,
+     "x": 287.0,
+     "y": 657.6,
+     "w": 155.0,
+     "h": 74.0,
+     "r": 97,
+     "g": 55,
+     "b": 21
+    },
+    {
+     "en": "Save",
+     "font": "C",
+     "align": "c",
+     "size": 49,
+     "x": 761.0,
+     "y": 641.9,
+     "w": 177.0,
+     "h": 71.0,
+     "r": 95,
+     "g": 52,
+     "b": 17
+    },
+    {
+     "en": "Pick up!",
+     "font": "N",
+     "align": "c",
+     "size": 28,
+     "x": 1123.4,
+     "y": 1165.3,
+     "w": 163.2,
+     "h": 40.6,
+     "r": 75,
+     "g": 62,
+     "b": 29
+    }
+   ]
+  },
+  {
+   "sprite": "Settings/BtnReset",
+   "width": 416,
+   "height": 116,
+   "labels": [
+    {
+     "en": "Reset to default",
+     "font": "N",
+     "align": "l",
+     "size": 34,
+     "x": 107.0,
+     "y": 33.7,
+     "w": 303.0,
+     "h": 49.3,
+     "r": 130,
+     "g": 59,
+     "b": 25
+    }
+   ]
+  },
+  {
+   "sprite": "Settings/BtnSaveBack",
+   "width": 457,
+   "height": 138,
+   "labels": [
+    {
+     "en": "Save & back",
+     "font": "N",
+     "align": "l",
+     "size": 44,
+     "x": 140.0,
+     "y": 33.4,
+     "w": 311.0,
+     "h": 63.8,
+     "r": 253,
+     "g": 243,
+     "b": 234
+    }
+   ]
+  },
+  {
+   "sprite": "Settings/SettingsBackground",
+   "width": 2752,
+   "height": 1536,
+   "labels": [
+    {
+     "en": "Settings",
+     "font": "B",
+     "align": "l",
+     "size": 119,
+     "x": 1213.0,
+     "y": 27.5,
+     "w": 723.2,
+     "h": 172.5,
+     "r": 242,
+     "g": 190,
+     "b": 78
+    },
+    {
+     "en": "Sound",
+     "font": "C",
+     "align": "l",
+     "size": 77,
+     "x": 398.0,
+     "y": 306.8,
+     "w": 327.0,
+     "h": 111.6,
+     "r": 23,
+     "g": 57,
+     "b": 66
+    },
+    {
+     "en": "Look & feel",
+     "font": "C",
+     "align": "l",
+     "size": 79,
+     "x": 1564.0,
+     "y": 307.9,
+     "w": 496.0,
+     "h": 114.5,
+     "r": 24,
+     "g": 57,
+     "b": 64
+    },
+    {
+     "en": "Music",
+     "font": "N",
+     "align": "l",
+     "size": 38,
+     "x": 304.0,
+     "y": 447.5,
+     "w": 177.0,
+     "h": 55.1,
+     "r": 79,
+     "g": 44,
+     "b": 19
+    },
+    {
+     "en": "Time of day",
+     "font": "N",
+     "align": "l",
+     "size": 39,
+     "x": 1471.0,
+     "y": 451.3,
+     "w": 347.2,
+     "h": 56.5,
+     "r": 77,
+     "g": 43,
+     "b": 20
+    },
+    {
+     "en": "Sound effects",
+     "font": "N",
+     "align": "l",
+     "size": 38,
+     "x": 303.0,
+     "y": 576.5,
+     "w": 398.4,
+     "h": 55.1,
+     "r": 79,
+     "g": 45,
+     "b": 21
+    },
+    {
+     "en": "Text size",
+     "font": "N",
+     "align": "l",
+     "size": 37,
+     "x": 1470.0,
+     "y": 588.2,
+     "w": 254.4,
+     "h": 53.6,
+     "r": 79,
+     "g": 45,
+     "b": 21
+    },
+    {
+     "en": "Ocean waves",
+     "font": "N",
+     "align": "l",
+     "size": 38,
+     "x": 303.0,
+     "y": 706.0,
+     "w": 380.8,
+     "h": 55.1,
+     "r": 85,
+     "g": 47,
+     "b": 22
+    },
+    {
+     "en": "Play",
+     "font": "C",
+     "align": "l",
+     "size": 82,
+     "x": 1563.0,
+     "y": 710.8,
+     "w": 282.0,
+     "h": 118.9,
+     "r": 23,
+     "g": 57,
+     "b": 61
+    },
+    {
+     "en": "Language",
+     "font": "C",
+     "align": "l",
+     "size": 89,
+     "x": 357.0,
+     "y": 823.5,
+     "w": 474.0,
+     "h": 129.0,
+     "r": 21,
+     "g": 56,
+     "b": 62
+    },
+    {
+     "en": "Cozy mode",
+     "font": "N",
+     "align": "l",
+     "size": 38,
+     "x": 1472.0,
+     "y": 831.5,
+     "w": 315.2,
+     "h": 55.1,
+     "r": 85,
+     "g": 47,
+     "b": 23
+    },
+    {
+     "en": "No timer when you head out to sea",
+     "font": "n",
+     "align": "l",
+     "size": 30,
+     "x": 1472.0,
+     "y": 882.5,
+     "w": 777.6,
+     "h": 43.5,
+     "r": 119,
+     "g": 87,
+     "b": 56
+    },
+    {
+     "en": "Hints",
+     "font": "N",
+     "align": "l",
+     "size": 37,
+     "x": 1473.0,
+     "y": 960.2,
+     "w": 169.0,
+     "h": 53.6,
+     "r": 84,
+     "g": 45,
+     "b": 22
+    },
+    {
+     "en": "Show which material fits each part",
+     "font": "n",
+     "align": "l",
+     "size": 30,
+     "x": 1472.0,
+     "y": 1016.5,
+     "w": 777.6,
+     "h": 43.5,
+     "r": 114,
+     "g": 81,
+     "b": 49
+    },
+    {
+     "en": "Material labels",
+     "font": "N",
+     "align": "l",
+     "size": 38,
+     "x": 1473.0,
+     "y": 1095.0,
+     "w": 433.6,
+     "h": 55.1,
+     "r": 82,
+     "g": 43,
+     "b": 20
+    },
+    {
+     "en": "Add words and icons, not just colours",
+     "font": "n",
+     "align": "l",
+     "size": 30,
+     "x": 1471.0,
+     "y": 1149.5,
+     "w": 836.8,
+     "h": 43.5,
+     "r": 117,
+     "g": 83,
+     "b": 50
+    },
+    {
+     "en": "Reduce motion",
+     "font": "N",
+     "align": "l",
+     "size": 38,
+     "x": 1473.0,
+     "y": 1226.5,
+     "w": 430.4,
+     "h": 55.1,
+     "r": 87,
+     "g": 47,
+     "b": 24
+    },
+    {
+     "en": "Calm down waves, boats and sparkles",
+     "font": "n",
+     "align": "l",
+     "size": 30,
+     "x": 1472.0,
+     "y": 1283.0,
+     "w": 852.8,
+     "h": 43.5,
+     "r": 116,
+     "g": 84,
+     "b": 48
+    }
+   ]
+  },
+  {
+   "sprite": "Workshop/BadgeDone",
+   "width": 140,
+   "height": 83,
+   "labels": [
+    {
+     "en": "Done",
+     "font": "N",
+     "align": "c",
+     "size": 25,
+     "x": 16.0,
+     "y": 22.9,
+     "w": 112.0,
+     "h": 36.2,
+     "r": 61,
+     "g": 96,
+     "b": 55
+    }
+   ]
+  },
+  {
+   "sprite": "Workshop/TakeKeyButton",
+   "width": 348,
+   "height": 100,
+   "labels": [
+    {
+     "en": "Take the key",
+     "font": "N",
+     "align": "l",
+     "size": 33,
+     "x": 105.0,
+     "y": 31.4,
+     "w": 237.0,
+     "h": 47.9,
+     "r": 27,
+     "g": 43,
+     "b": 43
+    }
+   ]
+  },
+  {
+   "sprite": "Workshop/HeadOutButton",
+   "width": 308,
+   "height": 104,
+   "labels": [
+    {
+     "en": "Head out",
+     "font": "N",
+     "align": "l",
+     "size": 38,
+     "x": 102.0,
+     "y": 25.5,
+     "w": 200.0,
+     "h": 55.1,
+     "r": 156,
+     "g": 217,
+     "b": 210
+    }
+   ]
+  },
+  {
+   "sprite": "Workshop/LetsFixButton",
+   "width": 366,
+   "height": 118,
+   "labels": [
+    {
+     "en": "Let's fix it!",
+     "font": "B",
+     "align": "l",
+     "size": 42,
+     "x": 113.0,
+     "y": 23.2,
+     "w": 247.0,
+     "h": 60.9,
+     "r": 247,
+     "g": 240,
+     "b": 232
+    }
+   ]
+  },
+  {
+   "sprite": "Workshop/TellMoreButton",
+   "width": 310,
+   "height": 108,
+   "labels": [
+    {
+     "en": "Tell me more",
+     "font": "N",
+     "align": "c",
+     "size": 33,
+     "x": 6.0,
+     "y": 29.4,
+     "w": 298.0,
+     "h": 47.9,
+     "r": 64,
+     "g": 44,
+     "b": 32
+    }
+   ]
+  },
+  {
+   "sprite": "Workshop/TasksButtonActive",
+   "width": 252,
+   "height": 104,
+   "labels": [
+    {
+     "en": "Tasks",
+     "font": "N",
+     "align": "l",
+     "size": 38,
+     "x": 102.0,
+     "y": 25.0,
+     "w": 144.0,
+     "h": 55.1,
+     "r": 23,
+     "g": 40,
+     "b": 42
+    }
+   ]
+  },
+  {
+   "sprite": "Workshop/TasksButton",
+   "width": 218,
+   "height": 104,
+   "labels": [
+    {
+     "en": "Tasks",
+     "font": "N",
+     "align": "l",
+     "size": 38,
+     "x": 101.0,
+     "y": 27.0,
+     "w": 111.0,
+     "h": 55.1,
+     "r": 228,
+     "g": 213,
+     "b": 136
+    }
+   ]
+  },
+  {
+   "sprite": "Workshop/StartDayButton",
+   "width": 1156,
+   "height": 118,
+   "labels": [
+    {
+     "en": "Start Day 1",
+     "font": "B",
+     "align": "c",
+     "size": 51,
+     "x": 360.9,
+     "y": 26.6,
+     "w": 395.2,
+     "h": 74.0,
+     "r": 254,
+     "g": 237,
+     "b": 222
+    }
+   ]
+  },
+  {
+   "sprite": "Workshop/ExteriorBackground",
+   "width": 2560,
+   "height": 1440,
+   "labels": [
+    {
+     "en": "YUSUF'S REPAIRS",
+     "font": "N",
+     "align": "c",
+     "size": 43,
+     "x": 1672.8,
+     "y": 583.0,
+     "w": 614.4,
+     "h": 62.4,
+     "r": 138,
+     "g": 122,
+     "b": 98
+    },
+    {
+     "en": "OPEN",
+     "font": "B",
+     "align": "c",
+     "size": 60,
+     "x": 2048.0,
+     "y": 957.4,
+     "w": 266.0,
+     "h": 87.0,
+     "r": 61,
+     "g": 138,
+     "b": 90
+    }
+   ]
+  },
+  {
+   "sprite": "Workshop/DayPlanBackground",
+   "width": 2752,
+   "height": 1536,
+   "labels": [
+    {
+     "en": "DAY 1 · MORNING",
+     "font": "N",
+     "align": "l",
+     "size": 31,
+     "x": 100.0,
+     "y": 80.8,
+     "w": 427.2,
+     "h": 44.9,
+     "r": 130,
+     "g": 109,
+     "b": 88
+    },
+    {
+     "en": "Open for repairs!",
+     "font": "C",
+     "align": "l",
+     "size": 68,
+     "x": 106.0,
+     "y": 123.4,
+     "w": 652.8,
+     "h": 98.6,
+     "r": 155,
+     "g": 88,
+     "b": 60
+    },
+    {
+     "en": "Yusuf's workshop is back.",
+     "font": "n",
+     "align": "l",
+     "size": 34,
+     "x": 99.0,
+     "y": 215.7,
+     "w": 649.6,
+     "h": 49.3,
+     "r": 48,
+     "g": 70,
+     "b": 70
+    },
+    {
+     "en": "Day 1",
+     "font": "C",
+     "align": "l",
+     "size": 125,
+     "x": 846.0,
+     "y": 201.4,
+     "w": 519.0,
+     "h": 181.2,
+     "r": 15,
+     "g": 52,
+     "b": 63
+    },
+    {
+     "en": "3 days until hatching night",
+     "font": "N",
+     "align": "r",
+     "size": 30,
+     "x": 1302.8,
+     "y": 289.9,
+     "w": 611.2,
+     "h": 43.5,
+     "r": 128,
+     "g": 91,
+     "b": 53
+    },
+    {
+     "en": "The workshop is open again. Word travels fast in a small",
+     "font": "n",
+     "align": "l",
+     "size": 37,
+     "x": 840.0,
+     "y": 362.2,
+     "w": 1545.6,
+     "h": 53.6,
+     "r": 75,
+     "g": 28,
+     "b": 5
+    },
+    {
+     "en": "town... someone is already on the way.",
+     "font": "n",
+     "align": "l",
+     "size": 36,
+     "x": 840.0,
+     "y": 415.8,
+     "w": 1046.4,
+     "h": 52.2,
+     "r": 72,
+     "g": 28,
+     "b": 5
+    },
+    {
+     "en": "Meet the first customer",
+     "font": "N",
+     "align": "l",
+     "size": 36,
+     "x": 956.0,
+     "y": 647.3,
+     "w": 644.8,
+     "h": 52.2,
+     "r": 52,
+     "g": 36,
+     "b": 20
+    },
+    {
+     "en": "Story",
+     "font": "N",
+     "align": "c",
+     "size": 26,
+     "x": 1777.0,
+     "y": 659.7,
+     "w": 119.0,
+     "h": 37.7,
+     "r": 67,
+     "g": 46,
+     "b": 24
+    },
+    {
+     "en": "Workshop",
+     "font": "n",
+     "align": "l",
+     "size": 27,
+     "x": 954.0,
+     "y": 698.0,
+     "w": 212.8,
+     "h": 39.1,
+     "r": 135,
+     "g": 92,
+     "b": 51
+    },
+    {
+     "en": "Repair the radio",
+     "font": "N",
+     "align": "l",
+     "size": 36,
+     "x": 955.0,
+     "y": 784.3,
+     "w": 441.6,
+     "h": 52.2,
+     "r": 44,
+     "g": 37,
+     "b": 27
+    },
+    {
+     "en": "Main",
+     "font": "N",
+     "align": "c",
+     "size": 26,
+     "x": 1785.0,
+     "y": 789.2,
+     "w": 110.0,
+     "h": 37.7,
+     "r": 62,
+     "g": 40,
+     "b": 9
+    },
+    {
+     "en": "Workbench",
+     "font": "n",
+     "align": "l",
+     "size": 27,
+     "x": 955.0,
+     "y": 829.0,
+     "w": 233.6,
+     "h": 39.1,
+     "r": 116,
+     "g": 80,
+     "b": 50
+    },
+    {
+     "en": "Collect trash by boat",
+     "font": "N",
+     "align": "l",
+     "size": 36,
+     "x": 955.0,
+     "y": 917.8,
+     "w": 577.6,
+     "h": 52.2,
+     "r": 44,
+     "g": 32,
+     "b": 18
+    },
+    {
+     "en": "Sea",
+     "font": "N",
+     "align": "c",
+     "size": 25,
+     "x": 1801.0,
+     "y": 925.4,
+     "w": 92.0,
+     "h": 36.2,
+     "r": 45,
+     "g": 93,
+     "b": 115
+    },
+    {
+     "en": "The beach",
+     "font": "n",
+     "align": "l",
+     "size": 28,
+     "x": 953.0,
+     "y": 961.3,
+     "w": 212.8,
+     "h": 40.6,
+     "r": 124,
+     "g": 83,
+     "b": 42
+    },
+    {
+     "en": "Sort it into bins",
+     "font": "N",
+     "align": "l",
+     "size": 36,
+     "x": 955.0,
+     "y": 1047.3,
+     "w": 428.8,
+     "h": 52.2,
+     "r": 43,
+     "g": 31,
+     "b": 17
+    },
+    {
+     "en": "Sort",
+     "font": "N",
+     "align": "c",
+     "size": 26,
+     "x": 1792.0,
+     "y": 1056.7,
+     "w": 104.0,
+     "h": 37.7,
+     "r": 112,
+     "g": 57,
+     "b": 32
+    },
+    {
+     "en": "The beach",
+     "font": "n",
+     "align": "l",
+     "size": 28,
+     "x": 953.0,
+     "y": 1095.3,
+     "w": 212.8,
+     "h": 40.6,
+     "r": 118,
+     "g": 76,
+     "b": 36
+    },
+    {
+     "en": "Help the turtles",
+     "font": "N",
+     "align": "l",
+     "size": 36,
+     "x": 956.0,
+     "y": 1184.3,
+     "w": 438.4,
+     "h": 52.2,
+     "r": 39,
+     "g": 28,
+     "b": 14
+    },
+    {
+     "en": "Turtles",
+     "font": "N",
+     "align": "c",
+     "size": 30,
+     "x": 1745.4,
+     "y": 1193.5,
+     "w": 163.2,
+     "h": 43.5,
+     "r": 49,
+     "g": 86,
+     "b": 43
+    },
+    {
+     "en": "The beach",
+     "font": "n",
+     "align": "l",
+     "size": 28,
+     "x": 954.0,
+     "y": 1228.3,
+     "w": 211.2,
+     "h": 40.6,
+     "r": 125,
+     "g": 81,
+     "b": 40
+    }
+   ]
+  },
+  {
+   "sprite": "Workshop/WorkshopBackground",
+   "width": 2560,
+   "height": 1440,
+   "labels": [
+    {
+     "en": "Ocean health",
+     "font": "N",
+     "align": "l",
+     "size": 24,
+     "x": 687.0,
+     "y": 43.1,
+     "w": 241.6,
+     "h": 34.8,
+     "r": 195,
+     "g": 225,
+     "b": 222
+    },
+    {
+     "en": "Grandpa's workshop · Day 1",
+     "font": "N",
+     "align": "l",
+     "size": 26,
+     "x": 168.0,
+     "y": 83.7,
+     "w": 555.2,
+     "h": 37.7,
+     "r": 196,
+     "g": 227,
+     "b": 224
+    },
+    {
+     "en": "YUSUF'S REPAIRS · 1971",
+     "font": "N",
+     "align": "c",
+     "size": 36,
+     "x": 584.4,
+     "y": 220.8,
+     "w": 691.2,
+     "h": 52.2,
+     "r": 122,
+     "g": 50,
+     "b": 24
+    },
+    {
+     "en": "WORKSHOP",
+     "font": "N",
+     "align": "c",
+     "size": 28,
+     "x": 1958.8,
+     "y": 303.8,
+     "w": 278.4,
+     "h": 40.6,
+     "r": 129,
+     "g": 83,
+     "b": 50
+    },
+    {
+     "en": "PLASTIC",
+     "font": "N",
+     "align": "c",
+     "size": 26,
+     "x": 1191.3,
+     "y": 332.7,
+     "w": 174.4,
+     "h": 37.7,
+     "r": 238,
+     "g": 232,
+     "b": 218
+    },
+    {
+     "en": "GLASS",
+     "font": "N",
+     "align": "c",
+     "size": 25,
+     "x": 1385.0,
+     "y": 333.4,
+     "w": 133.0,
+     "h": 36.2,
+     "r": 248,
+     "g": 245,
+     "b": 240
+    },
+    {
+     "en": "OPEN",
+     "font": "B",
+     "align": "c",
+     "size": 76,
+     "x": 1931.0,
+     "y": 319.9,
+     "w": 337.0,
+     "h": 110.2,
+     "r": 49,
+     "g": 138,
+     "b": 90
+    },
+    {
+     "en": "ROPE",
+     "font": "N",
+     "align": "c",
+     "size": 35,
+     "x": 1207.0,
+     "y": 526.0,
+     "w": 144.0,
+     "h": 50.8,
+     "r": 250,
+     "g": 245,
+     "b": 228
+    },
+    {
+     "en": "NETS",
+     "font": "N",
+     "align": "c",
+     "size": 35,
+     "x": 1553.0,
+     "y": 526.5,
+     "w": 140.0,
+     "h": 50.8,
+     "r": 248,
+     "g": 246,
+     "b": 240
+    }
+   ]
+  },
+  {
+   "sprite": "Workshop/TasksPanel",
+   "width": 784,
+   "height": 1250,
+   "labels": [
+    {
+     "en": "Today's tasks",
+     "font": "C",
+     "align": "l",
+     "size": 75,
+     "x": 90.0,
+     "y": 72.1,
+     "w": 560.0,
+     "h": 108.8,
+     "r": 20,
+     "g": 64,
+     "b": 74
+    },
+    {
+     "en": "Find grandpa's key",
+     "font": "N",
+     "align": "l",
+     "size": 34,
+     "x": 191.0,
+     "y": 253.2,
+     "w": 488.0,
+     "h": 49.3,
+     "r": 138,
+     "g": 108,
+     "b": 77
+    },
+    {
+     "en": "Above the door, just like the note said.",
+     "font": "n",
+     "align": "l",
+     "size": 26,
+     "x": 192.0,
+     "y": 301.2,
+     "w": 586.0,
+     "h": 37.7,
+     "r": 171,
+     "g": 141,
+     "b": 101
+    },
+    {
+     "en": "Meet Hatice Teyze",
+     "font": "N",
+     "align": "l",
+     "size": 33,
+     "x": 193.0,
+     "y": 404.4,
+     "w": 464.0,
+     "h": 47.9,
+     "r": 74,
+     "g": 42,
+     "b": 24
+    },
+    {
+     "en": "She just walked in with an old radio.",
+     "font": "n",
+     "align": "l",
+     "size": 26,
+     "x": 192.0,
+     "y": 451.2,
+     "w": 586.0,
+     "h": 37.7,
+     "r": 133,
+     "g": 103,
+     "b": 71
+    },
+    {
+     "en": "Repair the radio",
+     "font": "N",
+     "align": "l",
+     "size": 34,
+     "x": 237.0,
+     "y": 555.7,
+     "w": 411.2,
+     "h": 49.3,
+     "r": 73,
+     "g": 41,
+     "b": 23
+    },
+    {
+     "en": "Needs: clear glass, copper wire, smooth",
+     "font": "n",
+     "align": "l",
+     "size": 26,
+     "x": 193.0,
+     "y": 603.2,
+     "w": 585.0,
+     "h": 37.7,
+     "r": 132,
+     "g": 101,
+     "b": 67
+    },
+    {
+     "en": "wood.",
+     "font": "n",
+     "align": "l",
+     "size": 25,
+     "x": 192.0,
+     "y": 633.9,
+     "w": 122.0,
+     "h": 36.2,
+     "r": 132,
+     "g": 100,
+     "b": 66
+    },
+    {
+     "en": "Collect plastic at sea",
+     "font": "N",
+     "align": "l",
+     "size": 34,
+     "x": 192.0,
+     "y": 739.7,
+     "w": 534.4,
+     "h": 49.3,
+     "r": 73,
+     "g": 41,
+     "b": 23
+    },
+    {
+     "en": "Bring back bottles for the melter.",
+     "font": "n",
+     "align": "l",
+     "size": 26,
+     "x": 193.0,
+     "y": 787.2,
+     "w": 585.0,
+     "h": 37.7,
+     "r": 132,
+     "g": 101,
+     "b": 67
+    },
+    {
+     "en": "Polish sea glass",
+     "font": "N",
+     "align": "l",
+     "size": 34,
+     "x": 193.0,
+     "y": 935.7,
+     "w": 408.0,
+     "h": 49.3,
+     "r": 75,
+     "g": 43,
+     "b": 25
+    },
+    {
+     "en": "The radio dial needs something clear.",
+     "font": "n",
+     "align": "l",
+     "size": 26,
+     "x": 191.0,
+     "y": 983.2,
+     "w": 587.0,
+     "h": 37.7,
+     "r": 132,
+     "g": 101,
+     "b": 67
+    },
+    {
+     "en": "DAY REWARD",
+     "font": "N",
+     "align": "l",
+     "size": 26,
+     "x": 184.0,
+     "y": 1131.2,
+     "w": 294.4,
+     "h": 37.7,
+     "r": 152,
+     "g": 212,
+     "b": 206
+    },
+    {
+     "en": "Hatice Teyze joins as a helper ·",
+     "font": "N",
+     "align": "l",
+     "size": 30,
+     "x": 184.0,
+     "y": 1167.5,
+     "w": 594.0,
+     "h": 43.5,
+     "r": 233,
+     "g": 234,
+     "b": 229
+    },
+    {
+     "en": "+40 coins",
+     "font": "N",
+     "align": "l",
+     "size": 30,
+     "x": 183.0,
+     "y": 1203.0,
+     "w": 216.0,
+     "h": 43.5,
+     "r": 232,
+     "g": 234,
+     "b": 229
+    }
+   ]
+  },
+  {
+   "sprite": "Workbench/WorkbenchBackground",
+   "width": 2560,
+   "height": 1440,
+   "labels": [
+    {
+     "en": "Workshop",
+     "font": "N",
+     "align": "c",
+     "size": 31,
+     "x": 673.2,
+     "y": 54.3,
+     "w": 249.6,
+     "h": 44.9,
+     "r": 235,
+     "g": 240,
+     "b": 234
+    },
+    {
+     "en": "Workbench",
+     "font": "N",
+     "align": "c",
+     "size": 31,
+     "x": 913.1,
+     "y": 51.8,
+     "w": 276.8,
+     "h": 44.9,
+     "r": 27,
+     "g": 69,
+     "b": 79
+    },
+    {
+     "en": "Repair",
+     "font": "N",
+     "align": "l",
+     "size": 26,
+     "x": 2044.0,
+     "y": 55.2,
+     "w": 132.0,
+     "h": 37.7,
+     "r": 193,
+     "g": 224,
+     "b": 221
+    },
+    {
+     "en": "Workbench · Day 1",
+     "font": "N",
+     "align": "l",
+     "size": 26,
+     "x": 168.0,
+     "y": 83.7,
+     "w": 374.4,
+     "h": 37.7,
+     "r": 196,
+     "g": 226,
+     "b": 223
+    },
+    {
+     "en": "Her husband's radio",
+     "font": "n",
+     "align": "l",
+     "size": 26,
+     "x": 218.0,
+     "y": 289.2,
+     "w": 385.6,
+     "h": 37.7,
+     "r": 91,
+     "g": 105,
+     "b": 108
+    },
+    {
+     "en": "REPAIR STEPS",
+     "font": "N",
+     "align": "l",
+     "size": 29,
+     "x": 82.0,
+     "y": 361.1,
+     "w": 328.0,
+     "h": 42.0,
+     "r": 127,
+     "g": 111,
+     "b": 94
+    },
+    {
+     "en": "PARTS TRAY",
+     "font": "N",
+     "align": "c",
+     "size": 23,
+     "x": 2172.2,
+     "y": 467.7,
+     "w": 233.6,
+     "h": 33.4,
+     "r": 97,
+     "g": 55,
+     "b": 30
+    },
+    {
+     "en": "Shelf",
+     "font": "C",
+     "align": "l",
+     "size": 54,
+     "x": 1196.0,
+     "y": 1240.5,
+     "w": 217.0,
+     "h": 78.3,
+     "r": 239,
+     "g": 225,
+     "b": 198
+    },
+    {
+     "en": "Tools",
+     "font": "C",
+     "align": "l",
+     "size": 49,
+     "x": 88.0,
+     "y": 1243.4,
+     "w": 186.0,
+     "h": 71.0,
+     "r": 240,
+     "g": 226,
+     "b": 199
+    }
+   ]
+  },
+  {
+   "sprite": "Workbench/ToolScrewdriver",
+   "width": 214,
+   "height": 208,
+   "labels": [
+    {
+     "en": "Screwdriver",
+     "font": "N",
+     "align": "c",
+     "size": 25,
+     "x": 7.0,
+     "y": 129.9,
+     "w": 201.0,
+     "h": 36.2,
+     "r": 56,
+     "g": 52,
+     "b": 49
+    }
+   ]
+  },
+  {
+   "sprite": "Workbench/ToolCloth",
+   "width": 216,
+   "height": 208,
+   "labels": [
+    {
+     "en": "Cloth",
+     "font": "N",
+     "align": "c",
+     "size": 25,
+     "x": 50.0,
+     "y": 129.9,
+     "w": 116.0,
+     "h": 36.2,
+     "r": 55,
+     "g": 51,
+     "b": 48
+    }
+   ]
+  },
+  {
+   "sprite": "Workbench/ToolPliers",
+   "width": 214,
+   "height": 208,
+   "labels": [
+    {
+     "en": "Pliers",
+     "font": "N",
+     "align": "c",
+     "size": 25,
+     "x": 47.0,
+     "y": 129.9,
+     "w": 119.0,
+     "h": 36.2,
+     "r": 58,
+     "g": 53,
+     "b": 50
+    }
+   ]
+  },
+  {
+   "sprite": "Workbench/ToolSolder",
+   "width": 216,
+   "height": 208,
+   "labels": [
+    {
+     "en": "Soldering",
+     "font": "N",
+     "align": "c",
+     "size": 26,
+     "x": 13.6,
+     "y": 112.7,
+     "w": 188.8,
+     "h": 37.7,
+     "r": 57,
+     "g": 53,
+     "b": 49
+    },
+    {
+     "en": "iron",
+     "font": "N",
+     "align": "c",
+     "size": 26,
+     "x": 59.0,
+     "y": 146.7,
+     "w": 98.0,
+     "h": 37.7,
+     "r": 58,
+     "g": 54,
+     "b": 50
+    }
+   ]
+  },
+  {
+   "sprite": "Workbench/ShelfGlass",
+   "width": 226,
+   "height": 208,
+   "labels": [
+    {
+     "en": "Polished",
+     "font": "N",
+     "align": "l",
+     "size": 27,
+     "x": 111.0,
+     "y": 26.5,
+     "w": 109.0,
+     "h": 39.1,
+     "r": 54,
+     "g": 42,
+     "b": 31
+    },
+    {
+     "en": "glass",
+     "font": "N",
+     "align": "l",
+     "size": 28,
+     "x": 110.0,
+     "y": 59.8,
+     "w": 110.0,
+     "h": 40.6,
+     "r": 59,
+     "g": 54,
+     "b": 50
+    },
+    {
+     "en": "Clear",
+     "font": "N",
+     "align": "l",
+     "size": 22,
+     "x": 48.0,
+     "y": 105.4,
+     "w": 100.0,
+     "h": 31.9,
+     "r": 50,
+     "g": 105,
+     "b": 116
+    }
+   ]
+  },
+  {
+   "sprite": "Workbench/ShelfCopper",
+   "width": 218,
+   "height": 208,
+   "labels": [
+    {
+     "en": "Copper",
+     "font": "N",
+     "align": "l",
+     "size": 29,
+     "x": 109.0,
+     "y": 28.6,
+     "w": 103.0,
+     "h": 42.0,
+     "r": 55,
+     "g": 47,
+     "b": 42
+    },
+    {
+     "en": "wire",
+     "font": "N",
+     "align": "l",
+     "size": 32,
+     "x": 108.0,
+     "y": 51.6,
+     "w": 104.0,
+     "h": 46.4,
+     "r": 52,
+     "g": 48,
+     "b": 45
+    },
+    {
+     "en": "Conducts",
+     "font": "N",
+     "align": "l",
+     "size": 22,
+     "x": 47.0,
+     "y": 105.4,
+     "w": 153.6,
+     "h": 31.9,
+     "r": 135,
+     "g": 78,
+     "b": 34
+    }
+   ]
+  },
+  {
+   "sprite": "Workbench/ShelfWood",
+   "width": 220,
+   "height": 208,
+   "labels": [
+    {
+     "en": "Sanded",
+     "font": "N",
+     "align": "l",
+     "size": 29,
+     "x": 109.0,
+     "y": 11.1,
+     "w": 105.0,
+     "h": 42.0,
+     "r": 56,
+     "g": 41,
+     "b": 34
+    },
+    {
+     "en": "wood",
+     "font": "N",
+     "align": "l",
+     "size": 28,
+     "x": 109.0,
+     "y": 43.3,
+     "w": 105.0,
+     "h": 40.6,
+     "r": 55,
+     "g": 51,
+     "b": 48
+    },
+    {
+     "en": "Strong +",
+     "font": "N",
+     "align": "l",
+     "size": 21,
+     "x": 48.0,
+     "y": 92.1,
+     "w": 140.8,
+     "h": 30.4,
+     "r": 107,
+     "g": 83,
+     "b": 47
+    },
+    {
+     "en": "smooth",
+     "font": "N",
+     "align": "l",
+     "size": 22,
+     "x": 47.0,
+     "y": 119.4,
+     "w": 124.8,
+     "h": 31.9,
+     "r": 108,
+     "g": 85,
+     "b": 48
+    }
+   ]
+  },
+  {
+   "sprite": "Workbench/ShelfRope",
+   "width": 220,
+   "height": 208,
+   "labels": [
+    {
+     "en": "Rope",
+     "font": "N",
+     "align": "l",
+     "size": 28,
+     "x": 110.0,
+     "y": 43.8,
+     "w": 104.0,
+     "h": 40.6,
+     "r": 57,
+     "g": 52,
+     "b": 49
+    },
+    {
+     "en": "Flexible",
+     "font": "N",
+     "align": "l",
+     "size": 22,
+     "x": 48.0,
+     "y": 105.4,
+     "w": 132.8,
+     "h": 31.9,
+     "r": 64,
+     "g": 107,
+     "b": 47
+    }
+   ]
+  },
+  {
+   "sprite": "Workbench/ShelfFilament",
+   "width": 224,
+   "height": 208,
+   "labels": [
+    {
+     "en": "Filament",
+     "font": "N",
+     "align": "l",
+     "size": 26,
+     "x": 110.0,
+     "y": 44.2,
+     "w": 108.0,
+     "h": 37.7,
+     "r": 56,
+     "g": 37,
+     "b": 28
+    },
+    {
+     "en": "Strong",
+     "font": "N",
+     "align": "l",
+     "size": 22,
+     "x": 48.0,
+     "y": 107.4,
+     "w": 115.0,
+     "h": 31.9,
+     "r": 135,
+     "g": 63,
+     "b": 38
+    }
+   ]
+  }
+ ]
+}
