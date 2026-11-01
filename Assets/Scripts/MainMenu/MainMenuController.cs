@@ -38,7 +38,7 @@ public class MainMenuController : MonoBehaviour
 
     [Header("Ses (Assets/Tideworks/Resources/TideworksSes)")]
     [SerializeField] bool playMenuAudio = true;
-    [SerializeField] string menuMusic = Tideworks.Ses.MuzikAnaTema;
+    [SerializeField] string menuMusic = Tideworks.Ses.MuzikAkdeniz;
     [SerializeField] string menuAmbience = Tideworks.Ses.AmbiyansDeniz;
 
     CanvasGroup currentPage;

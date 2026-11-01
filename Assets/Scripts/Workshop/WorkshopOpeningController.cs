@@ -337,7 +337,7 @@ public class WorkshopOpeningController : MonoBehaviour
     IEnumerator EnterWorkshop()
     {
         startDayButton.interactable = false;
-        TwSes.EkranGecisi(Ses.MuzikTamir, Ses.AmbiyansAtolye);
+        TwSes.EkranGecisi(Ses.MuzikTamirciCaz, Ses.AmbiyansAtolye);
         dialogue.text = "";
         yield return SwitchPage(workshopPage);
         busy = false;
@@ -435,7 +435,7 @@ public class WorkshopOpeningController : MonoBehaviour
         letsFixButton.gameObject.SetActive(false);
         dialogue.text = "";
         yield return SwitchPage(workshopPage);
-        TwSes.EkranGecisi(Ses.MuzikAnaTema, Ses.AmbiyansAtolye, null);
+        TwSes.EkranGecisi(Ses.MuzikTamirciCaz, Ses.AmbiyansAtolye, null);
         yield return SetPanelRoutine(true);
         yield return Wait(0.3f);
         TwSes.Efekt(Ses.Onay);

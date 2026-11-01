@@ -114,7 +114,7 @@ public class WorkshopDayController : MonoBehaviour
         tasksButtonActive.SetActive(false);
         for (int i = 0; i < tasksDoneAtStart; i++) done[i] = true;     // onceki gunlerin tamiri
         RefreshTasks();
-        TwSes.EkranGecisi(Ses.MuzikTamir, Ses.AmbiyansAtolye, null);
+        TwSes.EkranGecisi(Ses.MuzikTamirciCaz, Ses.AmbiyansAtolye, null);
         StartCoroutine(Fade(1f, 0f));
         line = 0;
         Say(elifLines[0]);

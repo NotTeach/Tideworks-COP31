@@ -127,14 +127,14 @@ namespace Tideworks
         }
 
         /// <summary>
-        /// Oyun açılınca (hangi sahneden başlarsa başlasın) ana tema ve deniz sesi kendiliğinden başlar.
+        /// Oyun açılınca (hangi sahneden başlarsa başlasın) sakin Akdeniz teması ve deniz sesi kendiliğinden başlar.
         /// Sahneler kendi müziğini TwSes.Muzik / TwSahneSesi ile değiştirebilir.
         /// </summary>
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void OyunAcilinca()
         {
             var aktif = O.aAktif ? O.muzikA : O.muzikB;
-            if (!aktif.isPlaying) Muzik(Ses.MuzikAnaTema);
+            if (!aktif.isPlaying) Muzik(Ses.MuzikAkdeniz);
             if (!O.ambiyans.isPlaying) Ambiyans(Ses.AmbiyansDeniz);
         }
 
@@ -272,5 +272,9 @@ namespace Tideworks
         public const string AmbiyansAtolye = "ambiyans_atolye_loop";
         public const string MuzikAnaTema = "muzik_ana_tema_loop";
         public const string MuzikTamir = "muzik_tamir_sakin_loop";
+        /// <summary>Atolye sahneleri (ic mekan, tezgah, ayristirma): vibrafonlu caz, 112 bpm.</summary>
+        public const string MuzikTamirciCaz = "08_YENI_Tamirci_Caz_vibrafon_112bpm";
+        /// <summary>Diger sahneler (menu, deniz, kumsal): sakin, Akdeniz havasi (Tools/Audio/mediterranean_loop.py).</summary>
+        public const string MuzikAkdeniz = "muzik_akdeniz_sakin_loop";
     }
 }

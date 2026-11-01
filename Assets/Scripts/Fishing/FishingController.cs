@@ -160,7 +160,7 @@ public partial class FishingController : MonoBehaviour
         Spawn();
         OpenHowTo();
         RefreshHud();
-        TwSes.EkranGecisi(Ses.MuzikAnaTema, Ses.AmbiyansDeniz);
+        TwSes.EkranGecisi(Ses.MuzikAkdeniz, Ses.AmbiyansDeniz);
         TwSes.TekneMotoru(true);
         if (screenFader) StartCoroutine(Fade(screenFader, 1f, 0f));
     }

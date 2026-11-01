@@ -100,7 +100,7 @@ public class Day2BeachController : MonoBehaviour
         completeOverlay.SetActive(false);
         coinText.text = PlayerWallet.Coins.ToString();
         Say("Elif: Look! A caretta is tangled in a ghost net! Cut the knots with the scissors.");
-        TwSes.EkranGecisi(Ses.MuzikAnaTema, Ses.AmbiyansDeniz, null);
+        TwSes.EkranGecisi(Ses.MuzikAkdeniz, Ses.AmbiyansDeniz, null);
         if (screenFader) StartCoroutine(FadeIn());
     }
 

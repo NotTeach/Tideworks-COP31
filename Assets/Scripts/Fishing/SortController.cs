@@ -75,7 +75,7 @@ public class SortController : MonoBehaviour
             ? new List<int>(CatchBag.Items)
             : new List<int>(System.Linq.Enumerable.Range(0, trashSprites.Length));
         Begin(items, trashSprites);
-        TwSes.EkranGecisi(Ses.MuzikTamir, Ses.AmbiyansAtolye, null);
+        TwSes.EkranGecisi(Ses.MuzikTamirciCaz, Ses.AmbiyansAtolye, null);
         if (screenFader) StartCoroutine(FadeScreen(1f, 0f, null));
     }
 

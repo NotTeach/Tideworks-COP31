@@ -91,7 +91,7 @@ public class BeachController : MonoBehaviour
             if (!button.GetComponent<TwButonSesi>())
                 button.gameObject.AddComponent<TwButonSesi>();
         ResetBeach();
-        TwSes.EkranGecisi(Ses.MuzikAnaTema, Ses.AmbiyansDeniz, null);
+        TwSes.EkranGecisi(Ses.MuzikAkdeniz, Ses.AmbiyansDeniz, null);
         if (screenFader) StartCoroutine(FadeIn());
     }
 
