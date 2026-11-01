@@ -13,9 +13,10 @@ using UnityEngine.UI;
 /// Bilgisayar: yukari/W ileri, asagi/S geri, sol-sag/A-D dumen, E (veya Space) ile olta at, ya da bir esyaya tikla.
 /// Telefon: joystick ile kurek cek, olta butonuyla at. Adalara ve kumsala carpinca tekne geri seker.
 /// Butun copler toplaninca ayristirma sahnesi (Recycling), ardindan kumsal (Beach) gelir.
+/// Dukkan aletleri (buyuk ag, saglam olta, gunes motoru) ve 2. gunun firtinasi: FishingController.Storm.cs.
 /// Konumlar artboard pikselidir: x saga, y asagi, sol ust kose (0,0).
 /// </summary>
-public class FishingController : MonoBehaviour
+public partial class FishingController : MonoBehaviour
 {
     [Header("Sahneler")]
     [SerializeField] string menuSceneName = "MainMenu";
@@ -110,6 +111,7 @@ public class FishingController : MonoBehaviour
         public Vector2 home;
         public float phase, swim;
         public bool taken;
+        public bool ghost, baby;
     }
 
     readonly List<Catch> catches = new List<Catch>();
@@ -118,13 +120,13 @@ public class FishingController : MonoBehaviour
     float boatAngle = 180f, forwardSpeed, turnVelocity, bumpCooldown, hintTimer;
     int healthStart, healthTarget, fishBefore, fishToday, fishShown;
     readonly List<int> fishThresholds = new List<int>();
-    bool casting, leaving, sorting;
+    bool casting, leaving, sorting, finishing;
 
     class Wave { public RectTransform rt; public Image img; public Vector2 home; public float phase, speed; }
     readonly List<Wave> waves = new List<Wave>();
     float wakeTimer;
 
-    bool Paused => howTo && howTo.activeSelf;
+    bool Paused => (howTo && howTo.activeSelf) || ShopPanel.IsOpen || PromptOpen;
 
     static bool IsMobile => Application.isMobilePlatform || Touchscreen.current != null;
 
@@ -149,6 +151,8 @@ public class FishingController : MonoBehaviour
 
         tooltipLine.text = Loc.T(IsMobile ? "Use the joystick to row and the rod button to cast."
                                           : "Row with the arrow keys. Press E or tap trash to cast your rod.");
+        SetupGear();
+        SetupStorm();
         boatPos = boatStart;
         PlaceBoat();
         SpawnWaves();
@@ -161,7 +165,11 @@ public class FishingController : MonoBehaviour
         if (screenFader) StartCoroutine(Fade(screenFader, 1f, 0f));
     }
 
-    void OnDestroy() => TwSes.TekneMotoru(false);
+    void OnDestroy()
+    {
+        TwSes.TekneMotoru(false);
+        TeardownGear();
+    }
 
     // ---------------- Yerlesim ----------------
 
@@ -173,7 +181,8 @@ public class FishingController : MonoBehaviour
         {
             for (int tries = 0; tries < 400; tries++)
             {
-                var p = new Vector2(Mathf.Lerp(600, playArea.x - 90, (float)rng.NextDouble()),
+                // Firtinada copler kiyidan uzakta baslar ki ruzgar onlari hemen kumsala vurmasin
+                var p = new Vector2(Mathf.Lerp(storm ? 1000 : 600, playArea.x - 90, (float)rng.NextDouble()),
                                     Mathf.Lerp(hudTop + 70, playArea.y - hudBottom - 60, (float)rng.NextDouble()));
                 if (Blocked(p, margin)) continue;
                 bool near = false;
@@ -185,19 +194,21 @@ public class FishingController : MonoBehaviour
             return new Vector2(1500, 900);
         }
 
-        for (int i = 0; i < Mathf.Min(TrashPerRun, trashSprites.Length); i++) Add(i, false, Free(70));
+        foreach (var (kind, ghost, baby) in TodaysCatch())
+            Add(kind, ghost, baby, Free(ghost ? 110 : 70));
         boat.SetAsLastSibling();
 
         // Onceki gunlerde donen baliklar zaten yuzuyor
         for (int i = 0; i < fishBefore; i++) AddFish(TrashCatalog.FishReturnOrder[i], FishSpotNear(Free(FishRadius)), false);
 
-        void Add(int kind, bool fish, Vector2 pos)
+        void Add(int kind, bool ghost, bool baby, Vector2 pos)
         {
             var img = Instantiate(itemTemplate, itemsParent);
             img.gameObject.SetActive(true);
             img.sprite = trashSprites[kind];
             img.SetNativeSize();
-            var c = new Catch { rt = img.rectTransform, kind = kind, fish = false, home = pos,
+            if (ghost) img.rectTransform.sizeDelta *= 1.6f;     // hayalet aglar normal copten buyuk
+            var c = new Catch { rt = img.rectTransform, kind = kind, fish = false, home = pos, ghost = ghost, baby = baby,
                                 phase = (float)rng.NextDouble() * 6.28f };
             catches.Add(c);
             img.GetComponent<Button>().onClick.AddListener(() => OnItemClicked(c));
@@ -287,6 +298,7 @@ public class FishingController : MonoBehaviour
         if (sorting || leaving) { PlaceBoat(); return; }
         if (Paused)
         {
+            if (netCircle) netCircle.gameObject.SetActive(false);
             var k = Keyboard.current;
             if (k != null && (k.enterKey.wasPressedThisFrame || k.spaceKey.wasPressedThisFrame || k.eKey.wasPressedThisFrame))
                 CloseHowTo();
@@ -301,6 +313,7 @@ public class FishingController : MonoBehaviour
         Row(dt);
         LeaveWake(dt);
         PlaceBoat();
+        UpdateNetAim();
 
         var kb = Keyboard.current;
         bool cast = kb != null && (kb.eKey.wasPressedThisFrame || kb.spaceKey.wasPressedThisFrame);
@@ -346,9 +359,10 @@ public class FishingController : MonoBehaviour
 
         throttle = Mathf.Clamp(throttle, -1f, 1f);
         // Geri kurek daha zayif
-        forwardSpeed += acceleration * (throttle >= 0f ? throttle : throttle * 0.6f) * dt;
+        float boost = MotorBoost;
+        forwardSpeed += acceleration * boost * (throttle >= 0f ? throttle : throttle * 0.6f) * dt;
         forwardSpeed *= Mathf.Exp(-waterDrag * dt);
-        forwardSpeed = Mathf.Clamp(forwardSpeed, -maxSpeed * 0.4f, maxSpeed);
+        forwardSpeed = Mathf.Clamp(forwardSpeed, -maxSpeed * boost * 0.4f, maxSpeed * boost);
         boatAngle = heading + 180f;
 
         float h = heading * Mathf.Deg2Rad;
@@ -429,7 +443,8 @@ public class FishingController : MonoBehaviour
             }
             else
             {
-                if (GameSettings.ReduceMotion) continue;
+                if (storm) Drift(c, dt);
+                if (c.taken || GameSettings.ReduceMotion) continue;
                 SetPos(c.rt, c.home + new Vector2(Mathf.Sin(t * 0.7f + c.phase) * 8f, Mathf.Sin(t * 1.3f + c.phase) * 5f));
                 c.rt.localRotation = Quaternion.Euler(0, 0, Mathf.Sin(t * 0.9f + c.phase) * 6f);
             }
@@ -444,6 +459,7 @@ public class FishingController : MonoBehaviour
     void CastNearest()
     {
         if (casting || sorting || Paused) return;
+        if (NetEquipped) { CastNet(); return; }
         Catch best = null;
         float bestD = castRange;
         foreach (var c in catches)
@@ -469,6 +485,7 @@ public class FishingController : MonoBehaviour
             ShowFloating(Loc.T("Too far! Row a little closer."), c.home, Color.white);
             return;
         }
+        if (NetEquipped) { CastNet(c.home); return; }
         StartCoroutine(Reel(c));
     }
 
@@ -478,9 +495,10 @@ public class FishingController : MonoBehaviour
         c.taken = true;
         TwSes.Efekt(Ses.AgAt, 0.8f);
         Vector2 start = boatPos;
-        yield return Tween(0.28f, t => DrawLine(start, Vector2.Lerp(start, c.home, t)));
+        yield return Tween(0.28f * ReelFactor, t => DrawLine(start, Vector2.Lerp(start, c.home, t)));
         Splash(c.home);
-        yield return Tween(0.45f, t =>
+        // Hayalet ag agir: cekmesi daha uzun surer
+        yield return Tween(0.45f * ReelFactor * (c.ghost ? 2.2f : 1f), t =>
         {
             var p = Vector2.Lerp(c.home, boatPos, t * t);
             SetPos(c.rt, p);
@@ -491,16 +509,8 @@ public class FishingController : MonoBehaviour
         bobber.gameObject.SetActive(false);
         c.rt.gameObject.SetActive(false);
 
-        const int reward = 5;
-        GameProgress.Coins += reward;
-        TwSes.EfektCesitli(Ses.AtikTopla, 0.8f);
-        ShowFloating("+" + reward, boatPos, new Color32(255, 214, 92, 255));
-        bag.Add(c.kind);
-        CheckFishReturn(c.home);
-        RefreshHud();
+        yield return Landed(new List<Catch> { c });
         casting = false;
-
-        if (bag.Count >= TrashTotal) StartCoroutine(AllCollected());
     }
 
     IEnumerator Miss()
@@ -549,10 +559,13 @@ public class FishingController : MonoBehaviour
 
     IEnumerator AllCollected()
     {
+        if (finishing) yield break;
+        finishing = true;
         sortButton.interactable = true;
         TwSes.Efekt(Ses.OnarimTamam);
-        ShowFloating(Loc.T("The ocean is clean! Time to sort the catch."), boatPos + new Vector2(0, -120), new Color32(255, 236, 160, 255));
-        yield return new WaitForSeconds(2.5f);
+        ShowFloating(storm ? Loc.F("Fish: {0} \u00bb {1}", fishAtDayStart, FishCount) : Loc.T("The ocean is clean! Time to sort the catch."),
+            boatPos + new Vector2(0, -120), new Color32(255, 236, 160, 255));
+        yield return new WaitForSeconds(storm ? 3.2f : 2.5f);
         if (!sorting) SortTheCatch();
     }
 
@@ -562,14 +575,15 @@ public class FishingController : MonoBehaviour
 
     void RefreshHud()
     {
-        float cleaned = bag.Count / (float)TrashTotal;
-        float health = Mathf.Lerp(healthStart, healthTarget, cleaned) / 100f;
+        float health = CurrentHealth / 100f;
         coinText.text = GameProgress.Coins.ToString();
         healthFill.sizeDelta = new Vector2(Mathf.Max(18f, healthWidth * health), healthFill.sizeDelta.y);
         healthFill.gameObject.SetActive(health > 0f);
         healthText.text = Mathf.RoundToInt(health * 100f) + "%";
-        taskText.text = Loc.F("{0} / {1} trash fished out", bag.Count, TrashTotal);
-        fishText.text = (fishBefore + fishShown) + "/" + fishSprites.Length;
+        taskText.text = storm ? Loc.F("{0} / {1} ghost nets", ghostCollected, GhostNets)
+                              : Loc.F("{0} / {1} trash fished out", bag.Count, TrashTotal);
+        fishText.text = storm ? FishCount.ToString() : (fishBefore + fishShown) + "/" + fishSprites.Length;
+        RefreshStorm();
         bagCount.text = Loc.F("{0} items", bag.Count);
         for (int i = 0; i < bagIcons.Length; i++)
         {
@@ -580,7 +594,7 @@ public class FishingController : MonoBehaviour
             if (on && item >= 0) bagIcons[i].sprite = trashSprites[item];
         }
         var c = murk.color; c.a = murkAlpha * (1f - health); murk.color = c;
-        sortButton.interactable = bag.Count >= TrashTotal;
+        sortButton.interactable = Remaining == 0;
     }
 
     void ShowFloating(string text, Vector2 at, Color color)
@@ -701,7 +715,7 @@ public class FishingController : MonoBehaviour
     /// <summary>Kartin "Let's go!" butonu (Enter / Space / E de kapatir).</summary>
     public void CloseHowTo()
     {
-        if (!Paused) return;
+        if (!howTo || !howTo.activeSelf) return;
         howTo.SetActive(false);
         hintTimer = 0f;
         TwSes.Efekt(Ses.Tik, 0.6f);
@@ -728,7 +742,7 @@ public class FishingController : MonoBehaviour
     /// <summary>"Sort the catch" (butun copler toplaninca acilir).</summary>
     public void SortTheCatch()
     {
-        if (sorting || bag.Count < TrashTotal) return;
+        if (sorting || Remaining > 0) return;
         sorting = true;
         TwSes.TekneMotoru(false);
         StartCoroutine(GoSort());
@@ -737,8 +751,9 @@ public class FishingController : MonoBehaviour
     IEnumerator GoSort()
     {
         // Gunun sonucu kaydedilir: saglik hedefe ulasti, donen baliklar ekosisteme katildi
-        GameProgress.OceanHealth = healthTarget;
-        GameProgress.FishReturned = fishBefore + fishShown;
+        GameProgress.OceanHealth = Mathf.RoundToInt(CurrentHealth);
+        // Firtina gununde kiyiya vuran copler yuzunden esik kalsa da gunun turleri geri doner
+        GameProgress.FishReturned = fishBefore + (storm ? fishToday : fishShown);
         CatchBag.Items = new List<int>(bag);
         GameSettings.Save();
         yield return Load(recyclingSceneName);

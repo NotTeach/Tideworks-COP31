@@ -42,11 +42,17 @@ public class WorkshopOpeningController : MonoBehaviour
     [SerializeField] Vector2 keyTipPivot = new Vector2(0.47f, 0.05f);
 
     [Header("Gune gore dis cephe (2. gun ve sonrasi)")]
-    [Tooltip("Kapi acilinca 2. gun ve sonrasi bu sahneye gecer (gun plani ve Hatice Teyze sadece 1. gun)")]
+    [Tooltip("2. gun kapi acilinca: Elif ve oyuncak ayi Pamuk")]
+    [SerializeField] string day2AfterDoor = "Day2Workshop";
+    [SerializeField] string day3AfterDoor = "Day3Workshop";
+    [Tooltip("3. gun ve sonrasi kapi acilinca")]
     [SerializeField] string laterDaysAfterDoor = "Fishing";
     [SerializeField] LocalizedImage exteriorBackground;
     [SerializeField] Sprite day2Background;
     [SerializeField] Sprite day2BackgroundTr;
+    [Tooltip("3. gun: daha temiz deniz, yaliya yeni evler")]
+    [SerializeField] Sprite day3Background;
+    [SerializeField] Sprite day3BackgroundTr;
     [SerializeField] GameObject[] trashHiddenOnDay2;
     [SerializeField] GameObject shop;
     [SerializeField] Text toast;
@@ -239,8 +245,15 @@ public class WorkshopOpeningController : MonoBehaviour
 
         if (day >= 2)
         {
-            // Gun plani ve Hatice Teyze'nin ziyareti 1. gune ozel: sonraki gunler denize acilir
-            StartCoroutine(LoadAfterFade(laterDaysAfterDoor));
+            // Dukkan 2. gun acilir: ilk seferde tanitim karti ("NEW · SHOP UNLOCKED")
+            if (!ShopManager.IntroSeen)
+            {
+                bool closed = false;
+                ShopPanel.Open(() => closed = true, intro: true);
+                while (!closed) yield return null;
+            }
+            // Gun plani ve Hatice Teyze 1. gune ozel: 2. gun Elif'in, 3. gun Mert'in atolye sahnesi
+            StartCoroutine(LoadAfterFade(day == 2 ? day2AfterDoor : day == 3 ? day3AfterDoor : laterDaysAfterDoor));
             yield break;
         }
         yield return SwitchPage(dayPlanPage);
@@ -250,12 +263,13 @@ public class WorkshopOpeningController : MonoBehaviour
 
     /// <summary>
     /// Gune gore dis cephe: 2. gunden itibaren kumsal daha temiz (daha az cop, daha berrak deniz),
-    /// yaliya iki ev yapilmis ve magaza acilmis. Tabela kapi acilana kadar CLOSED.
+    /// yaliya iki ev yapilmis ve magaza acilmis; 3. gun deniz daha da temiz, ev sayisi artmis. Tabela kapi acilana kadar CLOSED.
     /// </summary>
     void SetupDay()
     {
         bool later = day >= 2;
         if (later && exteriorBackground && day2Background) exteriorBackground.SetSprites(day2Background, day2BackgroundTr);
+        if (day >= 3 && exteriorBackground && day3Background) exteriorBackground.SetSprites(day3Background, day3BackgroundTr);
         foreach (var t in trashHiddenOnDay2) if (t) t.SetActive(!later);
         if (shop) shop.SetActive(later);
         if (toast) toast.gameObject.SetActive(false);
@@ -280,6 +294,7 @@ public class WorkshopOpeningController : MonoBehaviour
     /// <summary>Magaza binasina tiklaninca.</summary>
     public void OpenShop()
     {
+        if (ShopManager.IsOpen && !busy) { ShopPanel.Open(); return; }
         if (!toast) return;
         StopCoroutine(nameof(ShowToast));
         StartCoroutine(nameof(ShowToast), Loc.T("The shop opens soon! Keep saving your coins."));
@@ -479,7 +494,7 @@ public class WorkshopOpeningController : MonoBehaviour
 
         // Altinlar yigindan ustteki sayac hapina ucar: "120 > 160"
         const int flying = 8;
-        GameProgress.Coins = start + rewardCoins;
+        PlayerWallet.Add(rewardCoins);
         GameSettings.Save();
         var parent = (RectTransform)coinTemplate.transform.parent;
         Vector2 from = LocalIn(parent, rewardCoinIcon), to = LocalIn(parent, counterPillCoin);

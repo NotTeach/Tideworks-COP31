@@ -22,11 +22,11 @@ using static MainMenuSceneBuilder;
 [InitializeOnLoad]
 public static partial class WorkshopSceneBuilder
 {
-    const int BuilderVersion = 7;
+    const int BuilderVersion = 8;
     const string ScenePath = "Assets/Scenes/Workshop.unity";
     const string SpriteDir = "Assets/Sprites/Workshop/";
     const string FontDir = "Assets/Fonts/";
-    const string AutoBuildKey = "Tideworks.WorkshopAutoBuild.v7";
+    const string AutoBuildKey = "Tideworks.WorkshopAutoBuild.v8";
     static string VersionKey => "Tideworks.WorkshopBuilderVersion." + PlayerSettings.productGUID;
 
     // Dis cephe ve atolye tasarimi 1280x720 (artboard 2x); gun plani 2752x1536 (artboard 1x).
@@ -110,6 +110,8 @@ public static partial class WorkshopSceneBuilder
 
     static WorkshopSceneBuilder()
     {
+        RequestDay2();
+        RequestDay3();
         if (File.Exists(ScenePath) && EditorPrefs.GetInt(VersionKey, 0) >= BuilderVersion) return;
         SceneAutoBuild.Request(AutoBuildKey, () => Build(askToSave: true));
     }
@@ -386,6 +388,8 @@ public static partial class WorkshopSceneBuilder
             ("startDayButton", startDay),
             ("day2Background", LoadSprite("ExteriorBackgroundDay2", SpriteDir)),
             ("day2BackgroundTr", LoadSprite("ExteriorBackgroundDay2", SpriteDir + "TR/")),
+            ("day3Background", LoadSprite("ExteriorBackgroundDay3", SpriteDir)),
+            ("day3BackgroundTr", LoadSprite("ExteriorBackgroundDay3", SpriteDir + "TR/")),
             ("shop", shopImg.gameObject), ("toast", toast), ("sign", sign.rectTransform), ("signText", signText),
             ("dialogue", dialogue), ("tellMoreButton", tellMore), ("letsFixButton", letsFix),
             ("tasksButtonActive", tasksActive.gameObject), ("tasksPanel", panel.rectTransform),

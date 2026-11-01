@@ -14,6 +14,8 @@ public class SortController : MonoBehaviour
 {
     [SerializeField] string menuSceneName = "MainMenu";
     [SerializeField] string beachSceneName = "Beach";
+    [Tooltip("2. gunun kumsali (caretta kurtarma)")]
+    [SerializeField] string day2BeachSceneName = "Day2Beach";
     [SerializeField] CanvasGroup screenFader;
     [SerializeField] Sprite[] trashSprites;   // TrashCatalog.Trash sirasiyla
 
@@ -131,7 +133,7 @@ public class SortController : MonoBehaviour
         {
             right++;
             earned += rightCoins;
-            GameProgress.Coins += rightCoins;
+            PlayerWallet.Add(rightCoins);
             TwSes.Efekt(Ses.Onay);
             Float("+" + rightCoins, binRows[chosen].rectTransform, new Color32(40, 140, 80, 255));
         }
@@ -140,7 +142,7 @@ public class SortController : MonoBehaviour
             wrong++;
             int lose = Mathf.Min(wrongCoins, GameProgress.Coins);
             earned -= lose;
-            GameProgress.Coins -= lose;
+            PlayerWallet.Add(-lose);
             TwSes.Efekt(Ses.Hata);
             Float("-" + wrongCoins, binRows[chosen].rectTransform, new Color32(190, 60, 40, 255));
             question.text = Loc.F("Not quite! It goes in {0}.", Loc.T(TrashCatalog.BinNames[correct]));
@@ -183,7 +185,7 @@ public class SortController : MonoBehaviour
     }
 
     /// <summary>Sonuc kartindaki "Continue": Gorev 3 (carettalara yardim) kumsalina gecer.</summary>
-    public void Done() => Leave(beachSceneName);
+    public void Done() => Leave(GameProgress.CurrentDay == 2 ? day2BeachSceneName : beachSceneName);
 
     /// <summary>Ust bardaki menu butonu.</summary>
     public void BackToMenu() => Leave(menuSceneName);

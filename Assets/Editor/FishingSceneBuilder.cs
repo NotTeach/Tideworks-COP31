@@ -11,7 +11,7 @@ using UnityEngine.UI;
 using static MainMenuSceneBuilder;
 
 /// <summary>
-/// Denize acilis sahnesini (Assets/Scenes/Fishing.unity) kodla kurar:
+/// Denize acilis sahnelerini (Assets/Scenes/Fishing.unity ve 2. gunun firtinali denizi Day2Sea.unity) kodla kurar:
 /// Gorev 1 - tekneyle oltayla cop ve balik toplama, Gorev 2 - copleri dogru kutulara ayirma.
 /// Gorev 2 (ayristirma) ayri sahnedir: Assets/Scenes/Recycling.unity (FishingSceneBuilder.Recycling.cs).
 /// Gorev 3 (carettalara yardim) ayri sahnedir: Assets/Scenes/Beach.unity (FishingSceneBuilder.Beach.cs).
@@ -23,15 +23,19 @@ using static MainMenuSceneBuilder;
 [InitializeOnLoad]
 public static partial class FishingSceneBuilder
 {
-    const int BuilderVersion = 7;
+    const int BuilderVersion = 8;
     const string ScenePath = "Assets/Scenes/Fishing.unity";
+    const string Day2ScenePath = "Assets/Scenes/Day2Sea.unity";
+    const string ShopDir = "Assets/Sprites/Shop/";
     const string ArtDir = "Assets/Art/Fishing/";
     const string UiDir = "Assets/Sprites/Fishing/";
     const string BeachDir = "Assets/Sprites/Beach/";
     const string CoinPath = "Assets/Sprites/Workshop/";
     const string FontDir = "Assets/Fonts/";
-    const string AutoBuildKey = "Tideworks.FishingAutoBuild.v7";
+    const string AutoBuildKey = "Tideworks.FishingAutoBuild.v8";
+    const string Day2AutoBuildKey = "Tideworks.Day2SeaAutoBuild.v8";
     static string VersionKey => "Tideworks.FishingBuilderVersion." + PlayerSettings.productGUID;
+    static string Day2VersionKey => "Tideworks.Day2SeaBuilderVersion." + PlayerSettings.productGUID;
 
     static readonly Vector2 Art = new Vector2(2560, 1440);
     static readonly Color Night = new Color32(5, 24, 30, 255);
@@ -46,6 +50,9 @@ public static partial class FishingSceneBuilder
     {
         RequestBeach();
         RequestRecycling();
+        RequestDay2Beach();
+        if (!File.Exists(Day2ScenePath) || EditorPrefs.GetInt(Day2VersionKey, 0) < BuilderVersion)
+            SceneAutoBuild.Request(Day2AutoBuildKey, () => Build(askToSave: true, day2: true));
         if (File.Exists(ScenePath) && EditorPrefs.GetInt(VersionKey, 0) >= BuilderVersion) return;
         SceneAutoBuild.Request(AutoBuildKey, () => Build(askToSave: true));
     }
@@ -72,13 +79,26 @@ public static partial class FishingSceneBuilder
         Build(askToSave: true);
     }
 
-    static void Build(bool askToSave)
+    [MenuItem("Tideworks/Rebuild Day 2 Sea Scene")]
+    static void RebuildDay2Menu()
+    {
+        if (File.Exists(Day2ScenePath) && !EditorUtility.DisplayDialog("Rebuild Day 2 Sea",
+                "Day2Sea sahnesi bastan kurulacak. Sahnede elle yaptiginiz degisiklikler silinir. Devam edilsin mi?",
+                "Rebuild", "Cancel"))
+            return;
+        Build(askToSave: true, day2: true);
+    }
+
+    /// <summary>day2: firtinali 2. gun denizi (hayalet aglar, ruzgar, yavru balik karti, bulutlar).</summary>
+    static void Build(bool askToSave, bool day2 = false)
     {
         if (EditorApplication.isPlayingOrWillChangePlaymode) return;
         if (askToSave && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+        string scenePath = day2 ? Day2ScenePath : ScenePath;
 
         ConfigureSprites(ArtDir);
         ConfigureSprites(UiDir);
+        ConfigureSprites(ShopDir);
         LoadFonts();
 
         var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
@@ -118,7 +138,28 @@ public static partial class FishingSceneBuilder
         var waveTemplate = Img(items, "WaveTemplate", UiDir, "WaveLine", new Rect(0, 0, 150, 34));
         var wakeTemplate = Img(items, "WakeTemplate", UiDir, "Wake", new Rect(0, 0, 120, 120));
         wakeTemplate.gameObject.SetActive(false);
+        var netCircle = Img(items, "NetCircle", ShopDir, "NetCircle", new Rect(0, 0, 380, 380));
+        netCircle.color = new Color(1f, 1f, 1f, 0.9f);
+        netCircle.gameObject.SetActive(false);
         var boat = Img(items, "Boat", ArtDir, "BoatTop", new Rect(1070, 664, 360, 192));
+
+        // Firtina: gri ton, suda kayan bulut golgeleri, temizlendikce cikan gunes
+        Image stormTint = null, sunGlow = null;
+        var clouds = new Image[0];
+        if (day2)
+        {
+            stormTint = MakeImage(sea, "StormTint", null);
+            stormTint.color = new Color32(52, 64, 74, 107);
+            Place(stormTint.rectTransform, new Rect(0, 0, Art.x, Art.y));
+            clouds = new Image[4];
+            for (int i = 0; i < clouds.Length; i++)
+            {
+                clouds[i] = Img(sea, "CloudShadow" + i, UiDir, "CloudShadow", new Rect(i * 700 - 200, 220 + (i % 2) * 520, 900, 460));
+                clouds[i].color = new Color32(20, 30, 38, 90);
+            }
+            sunGlow = Img(sea, "SunGlow", UiDir, "SunGlow", new Rect(1800, -260, 1000, 1000));
+            sunGlow.color = new Color(1f, 1f, 1f, 0f);
+        }
         var floating = Label(sea, "FloatingText", "", fontTitle, 52, Color.white, new Rect(0, 0, 900, 80), TextAnchor.MiddleCenter);
         floating.gameObject.AddComponent<Outline>().effectColor = new Color(0.06f, 0.2f, 0.24f, 0.9f);
 
@@ -132,6 +173,9 @@ public static partial class FishingSceneBuilder
         var help = Img(sea, "HelpButton", UiDir, "HudTeal", new Rect(458, 45, 100, 100));
         Label(help.transform, "Mark", "?", fontTitle, 60, Color.white, new Rect(0, 2, 100, 100), TextAnchor.MiddleCenter);
         Clickable(help, c.ShowHowTo);
+        var shop = Img(sea, "ShopButton", ShopDir, "ShopButtonHud", new Rect(586, 49, 210, 92));
+        Label(shop.transform, "Text", "Shop", fontTitle, 38, Ink, new Rect(62, -2, 140, 92), TextAnchor.MiddleCenter);
+        Clickable(shop, c.OpenShop);
 
         var coins = Img(sea, "Coins", UiDir, "HudDark220", new Rect(880, 45, 230, 100));
         Img(coins.transform, "Coin", CoinPath, "Coin", new Rect(22, 20, 60, 60));
@@ -146,11 +190,12 @@ public static partial class FishingSceneBuilder
         fill.type = Image.Type.Simple;
 
         var task = Img(sea, "Task", UiDir, "HudDark520", new Rect(1600, 36, 560, 120));
-        Label(task.transform, "Title", "TASK 1 · CLEAN THE OCEAN", fontHeavy, 24, SoftTeal, new Rect(26, 12, 380, 36));
+        Label(task.transform, "Title", day2 ? "TASK 2 · CLEAR THE GHOST NETS" : "TASK 1 · CLEAN THE OCEAN",
+            fontHeavy, 24, SoftTeal, new Rect(26, 12, 380, 36));
         var taskText = Label(task.transform, "Progress", "", fontTitle, 34, Color.white, new Rect(26, 50, 380, 56));
         var fishPill = Img(task.transform, "FishPill", UiDir, "HudPill", new Rect(394, 30, 150, 62));
         Img(fishPill.transform, "Fish", ArtDir, "FishAnchovy", new Rect(10, 17, 70, 27));
-        var fishText = Label(fishPill.transform, "Count", "0/5", fontTitle, 32, Ink, new Rect(80, 2, 66, 62));
+        var fishText = Label(fishPill.transform, "Count", day2 ? "2" : "0/5", fontTitle, 32, Ink, new Rect(80, 2, 66, 62));
 
         var tip = Img(sea, "Tooltip", UiDir, "Tooltip", new Rect(890, 176, 780, 140));
         var tooltip = tip.gameObject.AddComponent<CanvasGroup>();
@@ -160,14 +205,23 @@ public static partial class FishingSceneBuilder
         tipLine.resizeTextForBestFit = true;
         tipLine.resizeTextMaxSize = 32;
         tipLine.resizeTextMinSize = 20;
-        Label(tip.transform, "Rewards", "<color=#B4472A>Trash +5</color> and a healthier ocean · <color=#17777A>fish return to clean water</color>",
+        Label(tip.transform, "Rewards", day2
+                ? "<color=#B4472A>Ghost net +8</color> · the wind pushes trash ashore, <color=#17777A>catch the close ones first!</color>"
+                : "<color=#B4472A>Trash +5</color> and a healthier ocean · <color=#17777A>fish return to clean water</color>",
             fontBody, 28, Brown, new Rect(32, 78, 716, 44));
 
         // Alt bar
         var equipped = Img(sea, "Equipped", UiDir, "EquippedCard", new Rect(40, 1280, 380, 130));
-        Img(equipped.transform, "Rod", ArtDir, "Rod", new Rect(16, 10, 110, 110));
+        var equippedIcon = Img(equipped.transform, "Rod", ArtDir, "Rod", new Rect(16, 10, 110, 110));
+        equippedIcon.preserveAspect = true;
         Label(equipped.transform, "Label", "EQUIPPED", fontHeavy, 22, Brown, new Rect(140, 22, 230, 30));
-        Label(equipped.transform, "Name", "Grandpa's rod", fontTitle, 38, Ink, new Rect(140, 52, 230, 56));
+        // Ad kod tarafindan yazilir (bos birakilir ki ArtLocalization sabit cevirisini eklemesin)
+        var equippedName = Label(equipped.transform, "Name", "", fontTitle, 38, Ink, new Rect(140, 52, 230, 56));
+        equippedName.resizeTextForBestFit = true;
+        equippedName.resizeTextMaxSize = 38;
+        equippedName.resizeTextMinSize = 24;
+        equippedName.horizontalOverflow = HorizontalWrapMode.Wrap;
+        Clickable(equipped, c.EquippedClicked);
 
         var bagStrip = Img(sea, "Bag", UiDir, "BagStrip", new Rect(800, 1296, 980, 124));
         var bagIcons = new Image[9];
@@ -244,6 +298,33 @@ public static partial class FishingSceneBuilder
         Clickable(go, c.CloseHowTo);
         howTo.gameObject.SetActive(false);
 
+        GameObject babyPrompt = null;
+        RectTransform babyCard = null;
+        Image babyFish = null;
+        Text babyText = null;
+        if (day2)
+        {
+            var dim = MakeImage(sea, "BabyPrompt", null);
+            dim.color = new Color(0.02f, 0.08f, 0.1f, 0.5f);
+            dim.raycastTarget = true;
+            Place(dim.rectTransform, new Rect(-400, -400, Art.x + 800, Art.y + 800));
+            var card = Img(dim.transform, "Card", UiDir, "FinishCard", new Rect(400 + 730, 400 + 340, 1100, 760));
+            Label(card.transform, "Title", "Baby fish!", fontTitle, 84, Ink, new Rect(0, 50, 1100, 110), TextAnchor.MiddleCenter);
+            babyFish = Img(card.transform, "Fish", ArtDir, "FishAnchovy", new Rect(420, 170, 260, 130));
+            babyFish.preserveAspect = true;
+            babyText = Label(card.transform, "Line", "", fontHeavy, 40, Brown, new Rect(90, 320, 920, 200), TextAnchor.MiddleCenter);
+            babyText.horizontalOverflow = HorizontalWrapMode.Wrap;
+            var release = Img(card.transform, "Release", UiDir, "GoButton", new Rect(90, 570, 440, 124));
+            Label(release.transform, "Text", "Release", fontTitle, 52, Color.white, new Rect(0, -6, 440, 124), TextAnchor.MiddleCenter);
+            Clickable(release, c.ReleaseBaby);
+            var keep = Img(card.transform, "Keep", UiDir, "FinishButton", new Rect(570, 570, 440, 124));
+            Label(keep.transform, "Text", "Keep", fontTitle, 52, new Color32(70, 48, 30, 255), new Rect(0, -6, 440, 124), TextAnchor.MiddleCenter);
+            Clickable(keep, c.KeepBaby);
+            babyPrompt = dim.gameObject;
+            babyCard = card.rectTransform;
+            babyPrompt.SetActive(false);
+        }
+
         // ================= Ekran gecisi =================
         var faderImg = MakeImage(canvasGo.transform, "ScreenFader", null);
         faderImg.color = Night;
@@ -261,17 +342,26 @@ public static partial class FishingSceneBuilder
             ("mobileControls", mobile.gameObject), ("joystick", joystick),
             ("waveTemplate", waveTemplate), ("wakeTemplate", wakeTemplate),
             ("howTo", howTo.gameObject), ("howToCard", howCard.rectTransform),
-            ("desktopRows", desktop.gameObject), ("mobileRows", mobileRows.gameObject));
+            ("desktopRows", desktop.gameObject), ("mobileRows", mobileRows.gameObject),
+            ("shopButton", shop.gameObject), ("equippedIcon", equippedIcon), ("equippedName", equippedName),
+            ("rodIcon", LoadSprite("Rod", ArtDir)), ("sturdyRodIcon", LoadSprite("ItemSturdyRod", ShopDir)),
+            ("netIcon", LoadSprite("ItemBigNet", ShopDir)), ("netCircle", netCircle.rectTransform),
+            ("stormTint", stormTint), ("sunGlow", sunGlow), ("babyPrompt", babyPrompt),
+            ("babyPromptCard", babyCard), ("babyPromptFish", babyFish), ("babyPromptText", babyText));
+        SetArray(c, "cloudShadows", clouds);
+        var cso = new SerializedObject(c);
+        cso.FindProperty("stormMode").boolValue = day2;
+        cso.ApplyModifiedPropertiesWithoutUndo();
         SetArray(c, "bagIcons", bagIcons);
         SetArray(c, "trashSprites", TrashCatalog.Trash.Select(t => (Object)LoadSprite(t.sprite, ArtDir)).ToArray());
         SetArray(c, "fishSprites", TrashCatalog.FishSprites.Select(f => (Object)LoadSprite(f, ArtDir)).ToArray());
 
-        Directory.CreateDirectory(Path.GetDirectoryName(ScenePath));
+        Directory.CreateDirectory(Path.GetDirectoryName(scenePath));
         ArtLocalization.Apply(canvasGo.transform);
-        EditorSceneManager.SaveScene(scene, ScenePath);
-        AddToBuildSettings();
-        EditorPrefs.SetInt(VersionKey, BuilderVersion);
-        Debug.Log("[Tideworks] Fishing scene created: " + ScenePath);
+        EditorSceneManager.SaveScene(scene, scenePath);
+        AddToBuildSettings(scenePath);
+        EditorPrefs.SetInt(day2 ? Day2VersionKey : VersionKey, BuilderVersion);
+        Debug.Log("[Tideworks] Sea scene created: " + scenePath);
     }
 
     // ---------------- Yardimcilar ----------------
@@ -321,11 +411,11 @@ public static partial class FishingSceneBuilder
         rules.horizontalOverflow = HorizontalWrapMode.Wrap;
     }
 
-    static void AddToBuildSettings()
+    static void AddToBuildSettings(string scenePath)
     {
-        var scenes = EditorBuildSettings.scenes.Where(s => s.path != ScenePath).ToList();
+        var scenes = EditorBuildSettings.scenes.Where(s => s.path != scenePath).ToList();
         int after = scenes.FindIndex(s => s.path == "Assets/Scenes/Workshop.unity");
-        scenes.Insert(after + 1, new EditorBuildSettingsScene(ScenePath, true));
+        scenes.Insert(after + 1, new EditorBuildSettingsScene(scenePath, true));
         EditorBuildSettings.scenes = scenes.ToArray();
     }
 

@@ -227,7 +227,7 @@ public class BeachController : MonoBehaviour
     void Earn()
     {
         earned += reward;
-        GameProgress.Coins += reward;
+        PlayerWallet.Add(reward);
     }
 
     void Refresh()

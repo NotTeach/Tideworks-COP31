@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf2a0b80721335742a26dad8ac80f4d5, type: 3}
+  m_Name: amber_lamp
+  m_EditorClassIdentifier: Assembly-CSharp::ShopItem
+  id: amber_lamp
+  displayName: Amber lamp
+  description: A warm light that doesn't confuse the turtles.
+  recycleNote: Glass made from sea glass
+  price: 120
+  icon: {fileID: 21300000, guid: 6f40777195509f74d82402f1d8421f2d, type: 3}
+  type: 1
+  unlockDay: 2
+  neededOnDay: 3
+  order: 3
+  toolSlot: 

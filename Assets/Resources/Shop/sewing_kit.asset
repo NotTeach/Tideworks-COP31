@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf2a0b80721335742a26dad8ac80f4d5, type: 3}
+  m_Name: sewing_kit
+  m_EditorClassIdentifier: Assembly-CSharp::ShopItem
+  id: sewing_kit
+  displayName: Sewing kit
+  description: Needle, thread and patches for mending soft toys.
+  recycleNote: Thread made from old rope
+  price: 40
+  icon: {fileID: 21300000, guid: 9b0b57400055a6d45aa615198f41ab41, type: 3}
+  type: 1
+  unlockDay: 2
+  neededOnDay: 2
+  order: 0
+  toolSlot: 

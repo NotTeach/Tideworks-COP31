@@ -59,6 +59,7 @@ public static class GameProgress
         PlayerPrefs.SetInt(NestsKey, 0);
         PlayerPrefs.SetInt(HealthKey, 0);
         PlayerPrefs.SetInt(FishKey, 0);
+        ShopManager.ResetSave();
         PlayerPrefs.Save();
     }
 
@@ -75,6 +76,7 @@ public static class GameProgress
         PlayerPrefs.DeleteKey(NestsKey);
         PlayerPrefs.DeleteKey(HealthKey);
         PlayerPrefs.DeleteKey(FishKey);
+        ShopManager.ResetSave();
         PlayerPrefs.Save();
     }
 }

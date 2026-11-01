@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf2a0b80721335742a26dad8ac80f4d5, type: 3}
+  m_Name: big_net
+  m_EditorClassIdentifier: Assembly-CSharp::ShopItem
+  id: big_net
+  displayName: Big net
+  description: Catches all the trash around your cast in one go.
+  recycleNote: Woven from collected ghost nets
+  price: 80
+  icon: {fileID: 21300000, guid: 7686da43669f48c4e9a4bf5fdca97fd4, type: 3}
+  type: 0
+  unlockDay: 2
+  neededOnDay: 0
+  order: 1
+  toolSlot: net
